@@ -1,0 +1,16 @@
+.notebook {
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    overflow: hidden;
+
+    padding: 20px 0;
+}
+
+.notebook * {
+    font-family: 'Helvetica', sans-serif;
+}
+
+.notebook--line {
+    padding: 4px 24px;
+    outline: none;
+}
