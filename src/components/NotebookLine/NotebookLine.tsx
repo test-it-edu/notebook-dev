@@ -8,21 +8,24 @@ import React, {Component, ReactNode} from 'react';
 interface IProps extends React.HTMLAttributes<any> {
   // NotebookLine data
   data: any,
+  // lineType: any,
 
   // Notebook info
   selected: boolean,
   position: number,
   first: boolean,
   last: boolean,
-  caretOptions: any,
 
   // Actions
   onSelect: any,
   onNext: any,
   onPrevious: any,
   onDelete: any,
-  onAppendNewLine: any,
+  onAppend: any,
+
+  // Special attributes
   onResetCaretOptions: any,
+  caretOptions: any,
 }
 
 
@@ -42,6 +45,7 @@ interface IState {
 
 /**
  * class NotebookLine
+ * The basic text line of the Notebook
  * @author Ingo Andelhofs
  */
 class NotebookLine extends Component<IProps, IState> {
@@ -51,7 +55,7 @@ class NotebookLine extends Component<IProps, IState> {
     content: "",
     length: 0,
     caretPosition: 0,
-    type: "",
+    type: "p",
   }
 
   private getCaretPosition = (element: any): number => {
@@ -112,14 +116,40 @@ class NotebookLine extends Component<IProps, IState> {
 
   private onChange = () => {
     const element = this.ref.current!;
+    const text = element!.innerText;
+    const content = element!.innerHTML;
+    const length = element!.textContent!.length;
+
+    // Header type
+    let type = this.getLineType(text, element) ?? this.state.type;
 
     this.setState(() => {
       return {
-        text: element!.textContent,
-        content: element!.innerHTML,
-        length: element!.textContent!.length,
+        text,
+        content,
+        length,
+        type,
       }
     });
+  }
+
+  private getLineType = (text: string, element: any): string => {
+    if (text?.startsWith("###") && this.getCaretPosition(element) === 4) {
+      return "h3";
+    }
+    if (text?.startsWith("##") && !text?.startsWith("###") && this.getCaretPosition(element) === 3) {
+      return "h2";
+    }
+    if (text?.startsWith("#") && !text?.startsWith("##") && this.getCaretPosition(element) === 2) {
+      return "h1";
+    }
+
+    // Reset
+    if (text === "" && this.getCaretPosition(element) === 0) {
+      return "p";
+    }
+
+    return this.state.type ?? "p";
   }
 
   private onKeyUp = () => {
@@ -152,7 +182,7 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
   private onEnter = () => {
-    this.props.onAppendNewLine();
+    this.props.onAppend();
   }
 
   private onBackspace = (event: React.KeyboardEvent) => {
@@ -214,18 +244,24 @@ class NotebookLine extends Component<IProps, IState> {
 
   public render(): ReactNode {
     const {selected, onSelect, position} = this.props;
-    const selectedColor = selected ? "#fafafa" : "#f1f1f1";
+    const selectedClass = selected ? "--selected" : "--not-selected";
 
     return <div
-      className={"notebook--line"}
+      className={`notebook__line ${selectedClass}`}
       ref={this.ref}
+
+      data-line-type={this.state.type}
+
       onInput={this.onChange}
       onKeyDown={this.onKeyDown}
       onKeyUp={this.onKeyUp}
       onMouseUp={this.onCaretChange}
       onClick={() => onSelect(position)}
+
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
       contentEditable
-      style={{backgroundColor: selectedColor}}
     />;
   }
 }

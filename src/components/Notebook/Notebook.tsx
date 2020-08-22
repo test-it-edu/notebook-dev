@@ -130,17 +130,19 @@ class Notebook extends Component<IProps, IState> {
           // TODO: element is not unique
           key={element.id}
           data={element}
+
           position={index}
           selected={selected}
           first={this.isFirstElement(index)}
           last={this.isLastElement(index)}
-          caretOptions={cOptions}
 
-          onAppendNewLine={this.insertNewLine}
+          onSelect={this.selectLine}
           onNext={this.selectNextLine}
           onPrevious={this.selectPreviousLine}
           onDelete={this.deleteLine}
-          onSelect={this.selectLine}
+          onAppend={this.insertNewLine}
+
+          caretOptions={cOptions}
           onResetCaretOptions={this.resetCaretOptions}
         />
       })}
