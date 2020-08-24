@@ -66,60 +66,82 @@ class TextLine extends Component<IProps, IState> {
     });
   }
 
+
   private onChange = () => {
+    // Update state
     const element = this.ref.current!;
     const text = element!.innerText;
     const content = element!.innerHTML;
     const length = element!.textContent!.length;
-
-    // Header type
-    let type = this.getLineType(text, element) ?? this.state.type;
 
     this.setState(() => {
       return {
         text,
         content,
         length,
-        type,
       }
+    }, () => {
+      // Handle types
+      this.handleTypeChange();
     });
   }
 
-  private getLineType = (text: string, element: any): string => {
-    if (text?.startsWith("###") && Caret.getPosition(element) === 4) {
-      return "h3";
-    }
-    if (text?.startsWith("##") && !text?.startsWith("###") && Caret.getPosition(element) === 3) {
-      return "h2";
-    }
-    if (text?.startsWith("#") && !text?.startsWith("##") && Caret.getPosition(element) === 2) {
-      console.log("HELLO");
-      return "h1";
+  private handleTypeChange = () => {
+    const {text} = this.state;
+    const caretPosition = Caret.getPosition(this.ref.current);
+
+    // Handle reset
+    if (text === "") {
+      this.setType("p");
+      return;
     }
 
-    if (text?.startsWith("img") && Caret.getPosition(element) === 4) {
-      this.props.onChangeType("img");
-      console.log("img");
-      return "img";
+    // Handle inner line type change
+    const innerChangeKeywords = {
+      "#": "h1",
+      "##": "h2",
+      "###": "h3",
     }
 
-    if (text?.startsWith("txt") && Caret.getPosition(element) === 4) {
-      this.props.onChangeType("txt");
-      console.log("txt");
-      return "txt";
+    for (const [keyword, value] of Object.entries(innerChangeKeywords)) {
+      if (this.changedKeywordIs(keyword, text, caretPosition)) {
+        this.setType(value);
+        return;
+      }
     }
 
-    // Reset
-    if (text === "" && Caret.getPosition(element) === 0) {
-      return "p";
-    }
 
-    return this.state.type ?? "p";
+    // Handle line type change
+    const outerChangeKeywords = [
+      "img",
+      "txt",
+    ];
+
+    for (const keyword of outerChangeKeywords) {
+      if (this.changedKeywordIs(keyword, text, caretPosition)) {
+        this.props.onChangeType(keyword);
+        return;
+      }
+    }
   }
+
+  private setType = (type: string) => {
+    console.log("Type Changed");
+    this.setState(() => { return { type } });
+  }
+
+  private changedKeywordIs = (keyword: string, text: string, caretPosition: number) => {
+    const firstKeyword = text.split(" ")[0].trim();
+    const keywordLength = keyword.length;
+
+    return (firstKeyword === keyword && caretPosition === keywordLength + 1);
+  }
+
 
   private onKeyUp = () => {
     this.onCaretChange();
   }
+
 
   private onKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
@@ -182,6 +204,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
+
   private ensureSelected() {
     //TODO: UnFocus when not selected (image can not be focussed
     if (this.props.selected && this.ref.current)
@@ -205,6 +228,7 @@ class TextLine extends Component<IProps, IState> {
     this.ensureSelected();
     this.ensureCaretOptions();
   }
+
 
 
   public render(): ReactNode {
