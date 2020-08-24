@@ -39,8 +39,46 @@ Student at Hasselt University
 -[ ] Table Line
 
 
+
 ## Suggested Features
 - Block Limitations
 - Tooltip (line type options)
 - Moving Lines (up/down)
 - Extra Line wrapper actions
+
+
+
+## Structure
+- Notebook
+    - NotebookLine
+        - TextLine
+        - ImageLine
+        - ...
+
+### Notebook - NotebookLine (communication)
+- position
+- first
+- last
+- optional
+    - setCaretOptions
+    - resetCaretOptions
+    - caretOptions
+- shared 
+    - createLine
+    - removeLine
+    - selectLine
+    - moveToNextLine
+    - moveToPreviousLine
+    - updateData
+    - selected
+   
+### NotebookLine - *Line (communication)
+- shared actions (Notebook - NotebookLine)
+- changeLineType
+- ...
+
+
+
+
+
+

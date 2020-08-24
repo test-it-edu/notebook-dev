@@ -1,5 +1,6 @@
 import React, {Component, ReactNode} from 'react';
 import NotebookLine from "../NotebookLine/NotebookLine";
+import {NotebookProvider} from "./NotebookContext";
 
 
 /**
@@ -21,6 +22,7 @@ interface IState {
 }
 
 
+
 /**
  * class Notebook
  * @author Ingo Andelhofs
@@ -30,6 +32,8 @@ class Notebook extends Component<IProps, IState> {
     notebookLines: [{id: 0}],
     lineIdCounter: 1,
     currentSelection: 0,
+
+    // Caret Options
     caretOptions: null,
   }
 
@@ -91,13 +95,13 @@ class Notebook extends Component<IProps, IState> {
     })
   }
 
-  public deleteLine = (position: number, options: any) => {
-    if (this.isFirstElement(position))
+  public deleteLine = (options: any) => {
+    if (this.isFirstElement(this.state.currentSelection))
       return;
 
     this.setState((prevState: IState) => {
       const lines = prevState.notebookLines.filter((element, index: number) => {
-        return index !== position;
+        return index !== prevState.currentSelection;
       });
 
       const indexDiff = prevState.currentSelection === 0 ? 0 : -1;
@@ -119,34 +123,37 @@ class Notebook extends Component<IProps, IState> {
   }
 
 
-  public render(): ReactNode {
-    const cOptions = this.state.caretOptions ?? {end: false};
+  private renderNotebookLines(): ReactNode[] {
+    const {caretOptions, currentSelection} = this.state;
 
-    return <div className="notebook">
-      {this.state.notebookLines.map((element: any, index: number) => {
-        const selected = this.state.currentSelection === index;
-
+    return this.state.notebookLines.map((element: any, index: number) => {
         return <NotebookLine
-          // TODO: element is not unique
-          key={element.id}
-          data={element}
+          key={element.id} // TODO: element is not unique
 
+          selected={currentSelection === index}
           position={index}
-          selected={selected}
           first={this.isFirstElement(index)}
           last={this.isLastElement(index)}
 
-          onSelect={this.selectLine}
-          onNext={this.selectNextLine}
-          onPrevious={this.selectPreviousLine}
-          onDelete={this.deleteLine}
-          onAppend={this.insertNewLine}
-
-          caretOptions={cOptions}
-          onResetCaretOptions={this.resetCaretOptions}
+          caretOptions={caretOptions ?? {end: false}}
         />
-      })}
-    </div>;
+      });
+  }
+
+  public render(): ReactNode {
+    return <div className={"notebook"}>
+      <NotebookProvider
+        value={{
+          selectLine: this.selectLine,
+          selectNextLine: this.selectNextLine,
+          selectPrevLine: this.selectPreviousLine,
+          createLine: this.insertNewLine,
+          deleteLine: this.deleteLine,
+          resetCaretOptions: this.resetCaretOptions,
+        }}
+        children={this.renderNotebookLines()}
+      />
+    </div>
   }
 }
 
