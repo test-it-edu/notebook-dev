@@ -7,18 +7,8 @@ import React, {Component, ReactNode} from 'react';
  */
 export interface IProps extends React.HTMLAttributes<any> {
   html: any,
-  cursorPosition: number,
+  cursor: any,
   innerRef: React.Ref<HTMLDivElement>,
-}
-
-
-/**
- * interface IState
- * @author Ingo Andelhofs
- */
-export interface IState extends React.HTMLAttributes<any> {
-  html: any,
-  cursorPosition: number,
 }
 
 
@@ -28,13 +18,7 @@ export interface IState extends React.HTMLAttributes<any> {
  * @todo: Clean up and finalize
  * @author Ingo Andelhofs
  */
-class ContentEditable extends Component<IProps, IState> {
-  public state: IState = {
-    html: "",
-    cursorPosition: 0,
-  }
-
-
+class ContentEditable extends Component<IProps, any> {
   /**
    * Serialize the given HTML
    * @param html The HTML you want to serialize
@@ -49,11 +33,7 @@ class ContentEditable extends Component<IProps, IState> {
    * Called when the component mounts
    */
   public componentDidMount() {
-    // Initialize state
-    this.setState({
-      html: this.props.html,
-      cursorPosition: this.props.cursorPosition,
-    });
+
   }
 
 
@@ -71,7 +51,7 @@ class ContentEditable extends Component<IProps, IState> {
    * Render the component
    */
   public render(): ReactNode {
-    const {html, cursorPosition, innerRef, className, children, ...props} = this.props;
+    const {html, cursor, innerRef, className, children, ...props} = this.props;
 
     return <div
       ref={innerRef}

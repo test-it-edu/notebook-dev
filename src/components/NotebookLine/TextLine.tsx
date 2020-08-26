@@ -1,5 +1,5 @@
 import React, {Component, ReactNode} from 'react';
-import Caret from "../../utils/Caret";
+import Cursor from "../../utils/Cursor";
 import {NotebookContext} from "../Notebook/NotebookContext";
 import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathJaxParser from "../../utils/MathJaxParser";
@@ -34,6 +34,7 @@ interface IState {
   text: any,
   content: string,
   length: number,
+  spacePressed: boolean,
   caretPosition?: number,
   type?: "p" | "h1" | "h2" | "h3" | string,
 }
@@ -43,6 +44,10 @@ interface IState {
 /**
  * class TextLine
  * @author Ingo Andelhofs
+ *
+ * @TODO (BUG): On left/right arrow key hold, cursor only moves 1 character
+ * @TODO (BUG): Handle cursor on selection
+ * @TODO: Handle Del button and Enter (in the middle of text)
  */
 class TextLine extends Component<IProps, IState> {
   // React
@@ -53,6 +58,7 @@ class TextLine extends Component<IProps, IState> {
     length: 0,
     caretPosition: 0,
     type: "p",
+    spacePressed: false,
   }
 
   // References
@@ -60,12 +66,18 @@ class TextLine extends Component<IProps, IState> {
 
   // Methods
   private onCaretChange = () => {
-    const caretPosition = Caret.getPosition(this.ref.current);
+    const caretPosition = Cursor.getPosition(this.ref.current);
+
     this.setState(() => {
       return {
         caretPosition,
       }
     });
+  }
+
+
+  private onMouseUp = () => {
+    this.onCaretChange();
   }
 
 
@@ -75,7 +87,7 @@ class TextLine extends Component<IProps, IState> {
     const text = element!.innerText;
     const content = element!.innerHTML;
     const length = element!.textContent!.length;
-    const caretPosition = Caret.getPosition(this.ref.current);
+    const caretPosition = Cursor.getPosition(this.ref.current);
 
     this.setState(() => {
       return {
@@ -91,8 +103,8 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private handleTypeChange = () => {
-    const {text} = this.state;
-    const caretPosition = Caret.getPosition(this.ref.current);
+    const {text, content, spacePressed} = this.state;
+    const caretPosition = Cursor.getPosition(this.ref.current);
 
     // Handle reset
     if (text === "") {
@@ -108,8 +120,17 @@ class TextLine extends Component<IProps, IState> {
     }
 
     for (const [keyword, value] of Object.entries(innerChangeKeywords)) {
-      if (this.changedKeywordIs(keyword, text, caretPosition)) {
+      if (spacePressed && this.changedKeywordIs(keyword, text, caretPosition)) {
         this.setType(value);
+
+        let removedKeywordContent = content.substring(keyword.length + 6);
+        this.setState(() => {
+          return {
+            content: removedKeywordContent,
+            caretPosition: 0,
+          };
+        });
+
         return;
       }
     }
@@ -132,7 +153,7 @@ class TextLine extends Component<IProps, IState> {
   private parseText = () => {
     let {text, content} = this.state;
 
-    let cep = new ContentEditableParser(text, content, Caret.getPosition(this.ref.current));
+    let cep = new ContentEditableParser(text, content, Cursor.getPosition(this.ref.current));
 
     let delimiter = /(\$[^$]*\$)/; /* Opening and closing $ */
     let parseCallback = (string: string) => {
@@ -159,7 +180,15 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
-  private onKeyUp = () => {
+  private onKeyUp = (event: React.KeyboardEvent) => {
+    // TODO: Text Before cursor
+    // Handle reset to :p:
+
+    const {text} = this.state;
+    if (event.key === "Backspace" && text.substring(0, Cursor.getPosition(this.ref.current)) === "") {
+      this.setType("p");
+    }
+
     this.onCaretChange();
   }
 
@@ -186,6 +215,10 @@ class TextLine extends Component<IProps, IState> {
       this.onRightArrow(event);
     }
 
+    let spacePressed = event.key === " ";
+    this.setState(() => {
+      return { spacePressed };
+    });
   }
 
   private onEnter = () => {
@@ -193,9 +226,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private onBackspace = (event: React.KeyboardEvent) => {
-    // TODO: Handle Del key
-
-    if (Caret.getPosition(this.ref.current) === 0) {
+    if (Cursor.getPosition(this.ref.current) === 0) {
       event.preventDefault();
       this.context.deleteLine({end: true});
     }
@@ -210,55 +241,83 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private onLeftArrow = (event: React.KeyboardEvent) => {
-    if (Caret.getPosition(this.ref.current) === 0) {
+    if (Cursor.getPosition(this.ref.current) === 0) {
       event.preventDefault();
       this.context.selectPrevLine({end: true});
     }
   }
 
   private onRightArrow = (event: React.KeyboardEvent) => {
-    if (Caret.getPosition(this.ref.current) === this.state.text.length) {
+    if (Cursor.getPosition(this.ref.current) === this.state.text.length) {
       event.preventDefault();
       this.context.selectNextLine({end: false});
     }
   }
 
 
-
+  /**
+   * Ensures that this TextLine is focussed
+   */
   private ensureSelected() {
-    //TODO: UnFocus when not selected (image can not be focussed
-    if (this.props.selected && this.ref.current)
+    if (!this.ref.current)
+      return;
+
+    if (this.props.selected)
       this.ref.current.focus();
+    else {
+      // POSSIBLE-BUG: Does not un-focus correctly
+      this.ref.current.blur();
+    }
   }
+
 
   private ensureCaretOptions() {
     if (this.props.selected) {
       if (this.props.caretOptions.end) {
-        Caret.setPosition(this.ref.current, this.state.length);
+        Cursor.setPosition(this.ref.current, this.state.length);
+
         this.context.resetCaretOptions();
       }
     }
   }
 
+  /**
+   * Called if the component mounts
+   */
   public componentDidMount() {
     this.ensureSelected();
   }
 
+
+  /**
+   * Called if the components updates
+   */
   public componentDidUpdate() {
     this.ensureSelected();
-    this.ensureCaretOptions();
 
     if (!this.props.selected) {
       this.ref.current!.innerHTML = this.parseText();
     }
     else {
       this.ref.current!.innerHTML = this.state.content;
-      Caret.setPosition(this.ref.current, this.state.caretPosition!);
+
+      if (this.props.caretOptions.end) {
+        Cursor.setPosition(this.ref.current, this.state.length);
+        this.context.resetCaretOptions();
+        this.onCaretChange();
+        return;
+      }
+
+      Cursor.setPosition(this.ref.current, this.state.caretPosition!);
     }
+
+    // this.ensureCaretOptions();
   }
 
 
-
+  /**
+   * Render the component
+   */
   public render(): ReactNode {
     const selectedClass = this.props.selected ? "--selected" : "--not-selected";
 
@@ -271,7 +330,7 @@ class TextLine extends Component<IProps, IState> {
       onInput={this.onChange}
       onKeyDown={this.onKeyDown}
       onKeyUp={this.onKeyUp}
-      onMouseUp={this.onCaretChange}
+      onMouseUp={this.onMouseUp}
 
       autoCorrect="off"
       autoCapitalize="off"
