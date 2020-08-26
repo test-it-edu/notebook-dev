@@ -1,6 +1,8 @@
 import React, {Component, ReactNode} from 'react';
 import Caret from "../../utils/Caret";
 import {NotebookContext} from "../Notebook/NotebookContext";
+import ContentEditableParser from "../../utils/ContentEditableParser";
+import MathJaxParser from "../../utils/MathJaxParser";
 
 
 
@@ -8,7 +10,7 @@ import {NotebookContext} from "../Notebook/NotebookContext";
  * interface IProps
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any>  {
+interface IProps extends React.HTMLAttributes<any> {
   // NotebookLine data
   data?: {
     text: any,
@@ -73,16 +75,18 @@ class TextLine extends Component<IProps, IState> {
     const text = element!.innerText;
     const content = element!.innerHTML;
     const length = element!.textContent!.length;
+    const caretPosition = Caret.getPosition(this.ref.current);
 
     this.setState(() => {
       return {
         text,
         content,
         length,
+        caretPosition,
       }
     }, () => {
-      // Handle types
       this.handleTypeChange();
+      // this.parseText();
     });
   }
 
@@ -125,6 +129,23 @@ class TextLine extends Component<IProps, IState> {
     }
   }
 
+  private parseText = () => {
+    let {text, content} = this.state;
+
+    let cep = new ContentEditableParser(text, content, Caret.getPosition(this.ref.current));
+
+    let delimiter = /(\$[^$]*\$)/; /* Opening and closing $ */
+    let parseCallback = (string: string) => {
+      string = string.split("$").join("");
+
+      let MJP = new MathJaxParser();
+      MJP.setContainerOptions(this.ref.current);
+      return MJP.parse(string);
+    }
+
+    return cep.getContentWithTextBetween(delimiter, parseCallback);
+  }
+
   private setType = (type: string) => {
     console.log("Type Changed");
     this.setState(() => { return { type } });
@@ -141,7 +162,6 @@ class TextLine extends Component<IProps, IState> {
   private onKeyUp = () => {
     this.onCaretChange();
   }
-
 
   private onKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
@@ -227,6 +247,14 @@ class TextLine extends Component<IProps, IState> {
   public componentDidUpdate() {
     this.ensureSelected();
     this.ensureCaretOptions();
+
+    if (!this.props.selected) {
+      this.ref.current!.innerHTML = this.parseText();
+    }
+    else {
+      this.ref.current!.innerHTML = this.state.content;
+      Caret.setPosition(this.ref.current, this.state.caretPosition!);
+    }
   }
 
 
@@ -234,7 +262,6 @@ class TextLine extends Component<IProps, IState> {
   public render(): ReactNode {
     const selectedClass = this.props.selected ? "--selected" : "--not-selected";
 
-    // TODO: Switch to React-ContentEditable
     return <div
       className={selectedClass}
       ref={this.ref}
