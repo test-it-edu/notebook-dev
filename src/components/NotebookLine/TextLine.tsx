@@ -3,6 +3,7 @@ import Cursor from "../../utils/Cursor";
 import {NotebookContext} from "../Notebook/NotebookContext";
 import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathJaxParser from "../../utils/MathJaxParser";
+import {StringRenderMap} from "./RenderMap";
 
 
 
@@ -26,6 +27,7 @@ interface IProps extends React.HTMLAttributes<any> {
 }
 
 
+
 /**
  * interface IState
  * @author Ingo Andelhofs
@@ -46,6 +48,7 @@ interface IState {
  * @author Ingo Andelhofs
  *
  * @TODO (BUG): On left/right arrow key hold, cursor only moves 1 character
+ * @TODO (BUG): Remove of text on type change to heading
  * @TODO (BUG): Handle cursor on selection
  * @TODO: Handle Del button and Enter (in the middle of text)
  */
@@ -106,11 +109,6 @@ class TextLine extends Component<IProps, IState> {
     const {text, content, spacePressed} = this.state;
     const caretPosition = Cursor.getPosition(this.ref.current);
 
-    // Handle reset
-    if (text === "") {
-      this.setType("p");
-      return;
-    }
 
     // Handle inner line type change
     const innerChangeKeywords = {
@@ -123,7 +121,11 @@ class TextLine extends Component<IProps, IState> {
       if (spacePressed && this.changedKeywordIs(keyword, text, caretPosition)) {
         this.setType(value);
 
-        let removedKeywordContent = content.substring(keyword.length + 6);
+        // Don't remove all text only the space!
+        // Sometimes the space char is represented as &nbsp;
+        let extraRemove = (content.substr(keyword.length, 1) === " ") ? " ".length : "&nbsp;".length;
+
+        let removedKeywordContent = content.substring(keyword.length + extraRemove);
         this.setState(() => {
           return {
             content: removedKeywordContent,
@@ -137,12 +139,7 @@ class TextLine extends Component<IProps, IState> {
 
 
     // Handle line type change
-    const outerChangeKeywords = [
-      "img",
-      "txt",
-    ];
-
-    for (const keyword of outerChangeKeywords) {
+    for (const keyword of Object.keys(StringRenderMap)) {
       if (this.changedKeywordIs(keyword, text, caretPosition)) {
         this.props.onChangeType(keyword);
         return;
@@ -180,15 +177,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
-  private onKeyUp = (event: React.KeyboardEvent) => {
-    // TODO: Text Before cursor
-    // Handle reset to :p:
-
-    const {text} = this.state;
-    if (event.key === "Backspace" && text.substring(0, Cursor.getPosition(this.ref.current)) === "") {
-      this.setType("p");
-    }
-
+  private onKeyUp = () => {
     this.onCaretChange();
   }
 
@@ -219,6 +208,13 @@ class TextLine extends Component<IProps, IState> {
     this.setState(() => {
       return { spacePressed };
     });
+
+
+    // Reset type
+    const {text} = this.state;
+    if (event.key === "Backspace" && text.substring(0, Cursor.getPosition(this.ref.current)) === "") {
+      this.setType("p");
+    }
   }
 
   private onEnter = () => {

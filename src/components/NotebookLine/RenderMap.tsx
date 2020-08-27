@@ -1,5 +1,6 @@
 import TextLine from "./TextLine";
 import ImageLine from "./ImageLine";
+import LinesLine from "./LinesLine";
 
 
 
@@ -10,5 +11,6 @@ import ImageLine from "./ImageLine";
 export const StringRenderMap = {
   "txt": TextLine,
   "img": ImageLine,
+  "line": LinesLine,
 };
 
