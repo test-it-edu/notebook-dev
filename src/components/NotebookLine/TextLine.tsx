@@ -3,7 +3,8 @@ import Cursor from "../../utils/Cursor";
 import {NotebookContext} from "../Notebook/NotebookContext";
 import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathJaxParser from "../../utils/MathJaxParser";
-import {StringRenderMap} from "./RenderMap";
+import {StringRenderMap} from "./NotebookLine";
+import KeyManager from "../../utils/KeyManager";
 
 
 
@@ -14,15 +15,13 @@ import {StringRenderMap} from "./RenderMap";
 interface IProps extends React.HTMLAttributes<any> {
   // NotebookLine data
   data?: {
-    text: any,
-    content: any,
-    length: number,
-    type: "p" | "h1" | "h2" | "h3",
+    subType: "p" | "h1" | "h2" | "h3" | string,
+    content: string,
   },
 
   // Notebook info
   selected: boolean,
-  caretOptions: any,
+  cursorOptions: any,
   onChangeType: any,
 }
 
@@ -33,12 +32,13 @@ interface IProps extends React.HTMLAttributes<any> {
  * @author Ingo Andelhofs
  */
 interface IState {
-  text: any,
+  type?: "p" | "h1" | "h2" | "h3" | string,
   content: string,
+
+  text: any,
   length: number,
   spacePressed: boolean,
   caretPosition?: number,
-  type?: "p" | "h1" | "h2" | "h3" | string,
 }
 
 
@@ -47,14 +47,15 @@ interface IState {
  * class TextLine
  * @author Ingo Andelhofs
  *
- * @TODO (BUG): On left/right arrow key hold, cursor only moves 1 character
- * @TODO (BUG): Remove of text on type change to heading
- * @TODO (BUG): Handle cursor on selection
+ * @TODO (BUG): Handle cursor on selection (onClick componentDidMount is called)
  * @TODO: Handle Del button and Enter (in the middle of text)
  */
 class TextLine extends Component<IProps, IState> {
-  // React
+  // Properties
   public static contextType = NotebookContext;
+  private ref = React.createRef<HTMLDivElement>();
+
+  // Initial State
   public state: IState = {
     text: "",
     content: "",
@@ -64,28 +65,24 @@ class TextLine extends Component<IProps, IState> {
     spacePressed: false,
   }
 
-  // References
-  private ref = React.createRef<HTMLDivElement>();
+
 
   // Methods
-  private onCaretChange = () => {
+  private updateCursorPosition = () => {
     const caretPosition = Cursor.getPosition(this.ref.current);
-
-    this.setState(() => {
-      return {
-        caretPosition,
-      }
-    });
+    this.setState(() => { return { caretPosition, }; });
   }
 
 
+  // OnMouseUp Handlers
   private onMouseUp = () => {
-    this.onCaretChange();
+    this.updateCursorPosition();
   }
 
 
+  // OnChange handlers
   private onChange = () => {
-    // Update state
+   // Update state
     const element = this.ref.current!;
     const text = element!.innerText;
     const content = element!.innerHTML;
@@ -177,78 +174,81 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
+  // KeyUp Handlers
   private onKeyUp = () => {
-    this.onCaretChange();
+    this.updateCursorPosition();
   }
 
+
+  // KeyDown Handlers
   private onKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      this.onEnter();
-    }
-    else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      this.onUpArrow();
-    }
-    else if (event.key === "ArrowDown") {
-      event.preventDefault();
-      this.onDownArrow();
-    }
-    else if (event.key === "Backspace") {
-      this.onBackspace(event);
-    }
-    else if (event.key === "ArrowLeft") {
-      this.onLeftArrow(event);
-    }
-    else if (event.key === "ArrowRight") {
-      this.onRightArrow(event);
-    }
+    let keyManager = new KeyManager(event);
 
-    let spacePressed = event.key === " ";
-    this.setState(() => {
-      return { spacePressed };
+    keyManager.on({
+      "Enter": this.onEnter,
+      "Backspace": this.onBackspace,
+      " ": this.onSpace,
+      "ArrowUp": this.onArrowUp,
+      "ArrowDown": this.onArrowDown,
+      "ArrowLeft": this.onArrowLeft,
+      "ArrowRight": this.onArrowRight,
     });
-
-
-    // Reset type
-    const {text} = this.state;
-    if (event.key === "Backspace" && text.substring(0, Cursor.getPosition(this.ref.current)) === "") {
-      this.setType("p");
-    }
   }
 
-  private onEnter = () => {
+  private onEnter = (event: React.KeyboardEvent) => {
+    event.preventDefault();
     this.context.createLine();
   }
 
   private onBackspace = (event: React.KeyboardEvent) => {
-    if (Cursor.getPosition(this.ref.current) === 0) {
-      event.preventDefault();
-      this.context.deleteLine({end: true});
+    const {text} = this.state;
+    const cursorPosition = Cursor.getPosition(this.ref.current);
+
+    const beforeCursor = text.substring(0, cursorPosition);
+    const afterCursor = text.substring(cursorPosition);
+
+    if (beforeCursor === "") {
+      if (afterCursor === "") {
+        event.preventDefault();
+        this.context.deleteLine(Infinity);
+      }
+
+      this.setType("p");
     }
   }
 
-  private onUpArrow = () => {
-    this.context.selectPrevLine({});
+  private onSpace = (event: React.KeyboardEvent) => {
+    this.setState(() => { return { spacePressed: true, }; });
   }
 
-  private onDownArrow = () => {
-    this.context.selectNextLine({});
+  private onArrowUp = (event: React.KeyboardEvent) => {
+    event.preventDefault();
+    this.context.selectPrevLine(Cursor.getPosition(this.ref.current));
   }
 
-  private onLeftArrow = (event: React.KeyboardEvent) => {
+  private onArrowDown = (event: React.KeyboardEvent) => {
+    event.preventDefault();
+    this.context.selectNextLine(Cursor.getPosition(this.ref.current));
+  }
+
+  private onArrowLeft = (event: React.KeyboardEvent) => {
     if (Cursor.getPosition(this.ref.current) === 0) {
       event.preventDefault();
-      this.context.selectPrevLine({end: true});
+      this.context.selectPrevLine(Infinity);
     }
+
+    this.updateCursorPosition();
   }
 
-  private onRightArrow = (event: React.KeyboardEvent) => {
+  private onArrowRight = (event: React.KeyboardEvent) => {
     if (Cursor.getPosition(this.ref.current) === this.state.text.length) {
       event.preventDefault();
-      this.context.selectNextLine({end: false});
+      this.context.selectNextLine(0);
     }
+
+    this.updateCursorPosition();
   }
+
 
 
   /**
@@ -267,20 +267,11 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
-  private ensureCaretOptions() {
-    if (this.props.selected) {
-      if (this.props.caretOptions.end) {
-        Cursor.setPosition(this.ref.current, this.state.length);
-
-        this.context.resetCaretOptions();
-      }
-    }
-  }
-
   /**
    * Called if the component mounts
    */
   public componentDidMount() {
+    console.log("TextLine mounted");
     this.ensureSelected();
   }
 
@@ -288,26 +279,29 @@ class TextLine extends Component<IProps, IState> {
   /**
    * Called if the components updates
    */
-  public componentDidUpdate() {
+  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+    console.log("TextLine updated");
     this.ensureSelected();
 
-    if (!this.props.selected) {
-      this.ref.current!.innerHTML = this.parseText();
-    }
-    else {
+    if (this.props.selected) {
       this.ref.current!.innerHTML = this.state.content;
 
-      if (this.props.caretOptions.end) {
-        Cursor.setPosition(this.ref.current, this.state.length);
-        this.context.resetCaretOptions();
-        this.onCaretChange();
-        return;
+      // Updated caret options
+      if (prevProps.cursorOptions !== this.props.cursorOptions) {
+        // POSSIBLE-BUG: cursor moves weirdly
+        console.log("Caret Options change");
+
+        let chars = Math.min(this.props.cursorOptions, this.state.length);
+        Cursor.setPosition(this.ref.current, chars);
+      }
+      else {
+        Cursor.setPosition(this.ref.current, this.state.caretPosition!);
       }
 
-      Cursor.setPosition(this.ref.current, this.state.caretPosition!);
     }
-
-    // this.ensureCaretOptions();
+    else {
+      this.ref.current!.innerHTML = this.parseText();
+    }
   }
 
 

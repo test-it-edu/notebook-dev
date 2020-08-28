@@ -18,7 +18,7 @@ interface IState {
   notebookLines: any[],
   currentSelection: number,
   lineIdCounter: number,
-  caretOptions: any,
+  cursor: number,
 }
 
 
@@ -32,20 +32,19 @@ class Notebook extends Component<IProps, IState> {
     notebookLines: [{id: 0}],
     lineIdCounter: 1,
     currentSelection: 0,
-
-    // Caret Options
-    caretOptions: null,
+    cursor: 0,
   }
 
-  public isLastElement = (position: number) => {
+  public isLastElement = (position: number): boolean => {
     return position >= this.state.notebookLines.length - 1;
   }
 
-  public isFirstElement = (position: number) => {
+  public isFirstElement = (position: number): boolean => {
     return position <= 0;
   }
 
-  public insertNewLine = () => {
+
+  public insertNewLine = (): void => {
     const index = this.state.currentSelection;
 
     this.setState((prevState: IState) => {
@@ -63,31 +62,31 @@ class Notebook extends Component<IProps, IState> {
     });
   }
 
-  public selectNextLine = (options: any) => {
+  public selectNextLine = (cursor: number): void => {
     if (this.isLastElement(this.state.currentSelection))
       return;
 
     this.setState((prevState: IState) => {
       return {
         currentSelection: prevState.currentSelection + 1,
-        caretOptions: options,
+        cursor: cursor,
       };
     });
   }
 
-  public selectPreviousLine = (options: any) => {
+  public selectPreviousLine = (cursor: number): void => {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
     this.setState((prevState: IState) => {
       return {
         currentSelection: prevState.currentSelection - 1,
-        caretOptions: options,
+        cursor: cursor,
       };
     });
   }
 
-  public selectLine = (position: number) => {
+  public selectLine = (position: number): void => {
     this.setState(() => {
       return {
         currentSelection: position,
@@ -95,7 +94,7 @@ class Notebook extends Component<IProps, IState> {
     })
   }
 
-  public deleteLine = (options: any) => {
+  public deleteLine = (cursor: number): void => {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
@@ -109,22 +108,20 @@ class Notebook extends Component<IProps, IState> {
       return {
         notebookLines: lines,
         currentSelection: prevState.currentSelection + indexDiff,
-        caretOptions: options,
+        cursor: cursor,
       }
     });
   }
 
-  public resetCaretOptions = () => {
+  public resetCaretOptions = (): void => {
     this.setState(() => {
-      return {
-        caretOptions: {end: false}
-      };
+      return { cursor: 0 };
     })
   }
 
 
   private renderNotebookLines(): ReactNode[] {
-    const {caretOptions, currentSelection} = this.state;
+    const {cursor, currentSelection} = this.state;
 
     return this.state.notebookLines.map((element: any, index: number) => {
         return <NotebookLine
@@ -135,7 +132,7 @@ class Notebook extends Component<IProps, IState> {
           first={this.isFirstElement(index)}
           last={this.isLastElement(index)}
 
-          caretOptions={caretOptions ?? {end: false}}
+          cursorOptions={cursor}
         />
       });
   }
@@ -149,7 +146,6 @@ class Notebook extends Component<IProps, IState> {
           selectPrevLine: this.selectPreviousLine,
           createLine: this.insertNewLine,
           deleteLine: this.deleteLine,
-          resetCaretOptions: this.resetCaretOptions,
         }}
         children={this.renderNotebookLines()}
       />

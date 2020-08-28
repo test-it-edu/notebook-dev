@@ -1,6 +1,8 @@
 /**
  * util Cursor
  * @author Ingo Andelhofs
+ *
+ * @todo: Create a range method with start and end chars (offset(
  */
 class Cursor {
   /**
@@ -25,7 +27,8 @@ class Cursor {
           if (node.previousSibling) {
             node = node.previousSibling;
             charCount += node!.textContent!.length;
-          } else {
+          }
+          else {
             node = node.parentNode;
             if (node === null) {
               break;
@@ -61,6 +64,10 @@ class Cursor {
 
   /**
    * Create a range
+   *
+   * A node can be both a text or element node:
+   * - for text nodes offset skips that many of characters
+   * - for element nodes that many child nodes.
    */
   private static _createRange(node: any, chars: any, range: any) {
     if (!range) {
@@ -69,22 +76,29 @@ class Cursor {
       range.setStart(node, 0);
     }
 
+    // If the chars count is 0, we dont have to check for textNodes or elementNodes
     if (chars.count === 0) {
       range.setEnd(node, chars.count);
     }
     else if (node && chars.count > 0) {
+      // Handle TEXT node
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.textContent.length < chars.count) {
           chars.count -= node.textContent.length;
-        } else {
+        }
+        else {
           range.setEnd(node, chars.count);
           chars.count = 0;
         }
       }
+
+      // Handle ELEMENT node
       else {
         for (let lp = 0; lp < node.childNodes.length; lp++) {
+          // Extend the range of the node by adding the range of the child nodes
           range = Cursor._createRange(node.childNodes[lp], chars, range);
 
+          // Stop extending the range if there are no more chars to go forward
           if (chars.count === 0) {
             break;
           }
