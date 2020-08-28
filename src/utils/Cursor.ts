@@ -2,7 +2,8 @@
  * util Cursor
  * @author Ingo Andelhofs
  *
- * @todo: Create a range method with start and end chars (offset(
+ * @todo: Create a range method with start and end chars (offset)
+ * @todo: Cursor max position is textLength + </br> count, currently we are not counting </br> as an extra cursor position
  */
 class Cursor {
   /**

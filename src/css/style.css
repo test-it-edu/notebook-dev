@@ -62,3 +62,16 @@ table.lines tbody td {
     border-bottom: 1px solid #111111;
     width: 100%;
 }
+
+
+
+
+
+/* ContentEditable */
+.content-editable {
+    padding: 20px;
+    font-size: 20px;
+
+    border: 2px solid #111111;
+    outline: none;
+}

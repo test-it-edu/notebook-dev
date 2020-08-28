@@ -322,8 +322,6 @@ class TextLine extends Component<IProps, IState> {
       onKeyUp={this.onKeyUp}
       onMouseUp={this.onMouseUp}
 
-      autoCorrect="off"
-      autoCapitalize="off"
       spellCheck={false}
       contentEditable
     />;
