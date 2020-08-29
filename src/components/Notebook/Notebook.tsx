@@ -165,10 +165,6 @@ class Notebook extends Component<IProps, IState> {
    */
   public render(): ReactNode {
     return <div className={"notebook"}>
-      <button onClick={() => console.log(JSON.stringify(this.export(), null, 2))}>Export to console</button>
-      <br/>
-      <br/>
-
       <NotebookProvider
         value={{
           selectLine: this.selectLine,

@@ -31,8 +31,6 @@ class ClipboardManager {
       return;
     }
   }
-
-
   public static retrieveImageAsBase64(event: React.ClipboardEvent, callback: any) {
     event.persist();
     event.preventDefault();

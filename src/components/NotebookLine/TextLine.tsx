@@ -2,7 +2,7 @@ import React, {Component, ReactNode} from 'react';
 import Cursor from "../../utils/Cursor";
 import {NotebookContext} from "../Notebook/NotebookContext";
 import ContentEditableParser from "../../utils/ContentEditableParser";
-import MathJaxParser from "../../utils/MathJaxParser";
+import MathParser from "../../utils/MathParser";
 import {StringRenderMap} from "./NotebookLine";
 import KeyManager from "../../utils/KeyManager";
 
@@ -163,17 +163,14 @@ class TextLine extends Component<IProps, IState> {
     let parseCallback = (string: string) => {
       string = string.split("$").join("");
 
-      let MJP = new MathJaxParser();
-      MJP.setContainerOptions(this.element);
-      return MJP.parse(string);
+      return MathParser.parse(string);
     }
 
     return cep.getContentWithTextBetween(delimiter, parseCallback);
   }
 
   private setType = (type: string) => {
-    console.log("Type Changed");
-    this.setState(() => { return { subType: type } });
+    this.setState(() => ({ subType: type }));
   }
 
   private changedKeywordIs = (keyword: string, text: string, caretPosition: number) => {
@@ -261,6 +258,15 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
+  private export() {
+    this.context.exportLine(this.props.position, "txt", {
+      subType: this.state.subType,
+      html: this.state.html,
+      text: this.state.text,
+      cursor: this.state.cursor,
+    });
+  }
+
 
   /**
    * Ensures that this TextLine is focussed
@@ -278,6 +284,7 @@ class TextLine extends Component<IProps, IState> {
   public componentDidMount() {
     // console.log("TextLine mounted");
     this.ensureSelected();
+    this.export();
   }
 
 
@@ -308,12 +315,7 @@ class TextLine extends Component<IProps, IState> {
     // Export if content updates
     // TODO: If prevState !== state
     if (prevState.html !== this.state.html) {
-      this.context.exportLine(this.props.position, "txt", {
-        subType: this.state.subType,
-        html: this.state.html,
-        text: this.state.text,
-        cursor: this.state.cursor,
-      });
+      this.export();
     }
   }
 
