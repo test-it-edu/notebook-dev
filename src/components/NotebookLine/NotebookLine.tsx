@@ -3,6 +3,7 @@ import {NotebookContext} from "../Notebook/NotebookContext";
 import TextLine from "./TextLine";
 import ImageLine from "./ImageLine";
 import LinesLine from "./LinesLine";
+import ClipboardManager from "../../utils/ClipboardManager";
 
 
 
@@ -23,15 +24,14 @@ export const StringRenderMap = {
  * @author Ingo Andelhofs
  */
 interface IProps extends React.HTMLAttributes<any>  {
-  data?: any,
+  defaultType: string,
+  defaultData: any,
 
   selected: boolean,
-
   position: number,
   first?: boolean,
   last?: boolean,
-
-  cursorOptions: number,
+  cursor: number,
 }
 
 
@@ -42,7 +42,8 @@ interface IProps extends React.HTMLAttributes<any>  {
  */
 interface IState {
   type: string,
-  data?: any,
+  data: any,
+  props: any,
 }
 
 
@@ -54,13 +55,26 @@ interface IState {
  */
 class NotebookLine extends Component<IProps, IState> {
   public static contextType = NotebookContext;
+  public static defaultProps: IProps | any = {
+    defaultType: "txt",
+    defaultData: {
+      subType: "p",
+      html: "",
+    },
+  }
   public state: IState = {
     type: "txt",
+    data: {
+      subType: "p",
+      html: "",
+    },
+
+    props: {},
   }
 
 
   /**
-   * Selects this line as the currently selected line
+   * Select this line in the Notebook
    * @TODO: Move selection to the node itself
    */
   private select = () => {
@@ -69,20 +83,49 @@ class NotebookLine extends Component<IProps, IState> {
 
 
   /**
-   * Updates the LineType of the current line
-   * @param type The LineType you want to change to
+   * Set the LineType
+   * @param type The LineType you want to set
+   * @param props Extra properties you want to pass to the NotebookLine
    */
-  private changeType = (type: string) =>  {
-    this.setState({ type });
+  private setType = (type: string, props: any = {}): void =>  {
+    this.setState(() => ({ type, props }));
   }
 
 
-  public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
-    console.log("NotebookLine updated");
+  private onPaste = (event: React.ClipboardEvent): void => {
+    ClipboardManager.retrieveImageAsBase64(event, (base64: any) => {
+      if (base64) {
+        this.setType("img", {
+          defaultData: {
+            url: base64,
+          },
+        });
+      }
+    });
   }
 
+
+  /**
+   * Called if the component mounts
+   */
   public componentDidMount() {
-    console.log("NotebookLine mounted");
+    // console.log("NotebookLine mounted");
+
+    // Initialize state with defaults
+    this.setState(() => ({
+      type: this.props.defaultType,
+      data: this.props.defaultData,
+    }));
+  }
+
+
+  /**
+   * Called if the component is updated
+   * @param prevProps The previous props
+   * @param prevState The previous state
+   */
+  public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+    // console.log("NotebookLine updated");
   }
 
 
@@ -91,7 +134,16 @@ class NotebookLine extends Component<IProps, IState> {
    */
   private renderLine(): ReactNode {
     const Element = (StringRenderMap as any)[this.state.type];
-    return <Element {...this.props} onChangeType={this.changeType} />
+
+    const { defaultData, ...rest } = this.props;
+    const props = {
+      ...rest,
+      ...this.state.props,
+      onLineTypeChange: this.setType,
+      onPaste: this.onPaste,
+    };
+
+    return <Element {...props} />
   }
 
 

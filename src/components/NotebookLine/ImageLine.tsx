@@ -1,5 +1,7 @@
 import React, {Component, ReactNode} from 'react';
 import {NotebookContext} from "../Notebook/NotebookContext";
+import KeyManager from "../../utils/KeyManager";
+import Focusable from "../Focusable/Focusable";
 
 
 
@@ -8,8 +10,17 @@ import {NotebookContext} from "../Notebook/NotebookContext";
  * @author Ingo Andelhofs
  */
 interface IProps extends React.HTMLAttributes<any>  {
-  data?: any,
+  defaultData?: {
+    url: string,
+  },
+
+  // Notebook
   selected: boolean,
+  position: number,
+
+  // NotebookLine
+  onLineTypeChange: (type: string) => void,
+  onPaste: (pasteData: any) => void,
 }
 
 
@@ -31,35 +42,42 @@ class ImageLine extends Component<IProps, any> {
   public ref = React.createRef<HTMLDivElement>();
 
 
-  private onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      this.context.selectNextLine(Infinity);
-    }
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      this.context.selectPrevLine(Infinity);
-    }
-
-
+  // Getters
+  private get element(): HTMLDivElement {
+    return this.ref.current!;
   }
 
-  private ensureSelected() {
-    if (!this.ref.current)
-      return;
 
-    this.props.selected ?
-      this.ref.current.focus() :
-      this.ref.current.blur();
-  }
+  // KeyDown handlers
+  private onKeyDown = (event: React.KeyboardEvent) => {
+    let keyManager = new KeyManager(event);
+    keyManager.on({
+      "ArrowUp": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectPrevLine(Infinity)
+      },
+      "ArrowDown": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectNextLine(Infinity)
+      },
+      "ArrowLeft": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectPrevLine(Infinity)
+      },
+      "ArrowRight": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectNextLine(0)
+      },
 
-  public componentDidMount() {
-    this.ensureSelected();
-  }
-
-  public componentDidUpdate() {
-    this.ensureSelected();
+      "Enter": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.createLine();
+      },
+      "Backspace": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.deleteLine(Infinity)
+      },
+    });
   }
 
 
@@ -67,16 +85,19 @@ class ImageLine extends Component<IProps, any> {
    * Render the Image container with Action buttons
    */
   private renderImageContainer() {
+    let url = this.props?.defaultData?.url || "https://via.placeholder.com/400x200";
+
     return <div>
-      <div className="action-buttons">
+      <div className={"action-buttons"}>
         <button>Upload Image</button>
         <br/>
         <button>Align Left</button>
         <button>Align Middle</button>
         <button>Align Right</button>
       </div>
-      <div className="image-wrapper">
-        <img src="https://via.placeholder.com/400x200" alt="Placeholder" />
+
+      <div className="image-wrapper" style={{textAlign: "center"}}>
+        <img src={url} alt="Placeholder"  />
       </div>
     </div>;
   }
@@ -88,9 +109,10 @@ class ImageLine extends Component<IProps, any> {
   public render(): ReactNode {
     const selectedClass = this.props.selected ? " --selected" : " --not-selected";
 
-    return <div
-      tabIndex={0}
-      ref={this.ref}
+    return <Focusable
+      innerRef={this.ref}
+      focus={this.props.selected}
+
       className={"image-line" + selectedClass}
       children={this.renderImageContainer()}
 

@@ -3,11 +3,13 @@ import NotebookLine from "../NotebookLine/NotebookLine";
 import {NotebookProvider} from "./NotebookContext";
 
 
+
 /**
  * interface IProps
  * @author Ingo Andelhofs
  */
 interface IProps extends React.HTMLAttributes<any> {}
+
 
 
 /**
@@ -34,6 +36,7 @@ class Notebook extends Component<IProps, IState> {
     currentSelection: 0,
     cursor: 0,
   }
+
 
   public isLastElement = (position: number): boolean => {
     return position >= this.state.notebookLines.length - 1;
@@ -94,7 +97,7 @@ class Notebook extends Component<IProps, IState> {
     })
   }
 
-  public deleteLine = (cursor: number): void => {
+  public deleteLine = (cursor: number = Infinity): void => {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
@@ -113,13 +116,32 @@ class Notebook extends Component<IProps, IState> {
     });
   }
 
-  public resetCaretOptions = (): void => {
-    this.setState(() => {
-      return { cursor: 0 };
-    })
+
+  public exportLine = (position: number, type: string, data: any) => {
+    let updatedLines = this.state.notebookLines.map((element: any, index: number) => {
+      if (index === position) {
+        return {
+          ...element,
+          type,
+          data,
+        }
+      }
+      return element;
+    });
+
+    this.setState(() => ({
+      notebookLines: updatedLines,
+    }));
+  }
+
+  public export(): any {
+    return this.state.notebookLines;
   }
 
 
+  /**
+   * Render the all the Lines
+   */
   private renderNotebookLines(): ReactNode[] {
     const {cursor, currentSelection} = this.state;
 
@@ -132,13 +154,21 @@ class Notebook extends Component<IProps, IState> {
           first={this.isFirstElement(index)}
           last={this.isLastElement(index)}
 
-          cursorOptions={cursor}
+          cursor={cursor}
         />
       });
   }
 
+
+  /**
+   * Render the component
+   */
   public render(): ReactNode {
     return <div className={"notebook"}>
+      <button onClick={() => console.log(JSON.stringify(this.export(), null, 2))}>Export to console</button>
+      <br/>
+      <br/>
+
       <NotebookProvider
         value={{
           selectLine: this.selectLine,
@@ -146,6 +176,8 @@ class Notebook extends Component<IProps, IState> {
           selectPrevLine: this.selectPreviousLine,
           createLine: this.insertNewLine,
           deleteLine: this.deleteLine,
+
+          exportLine: this.exportLine,
         }}
         children={this.renderNotebookLines()}
       />

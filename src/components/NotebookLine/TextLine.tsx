@@ -13,16 +13,22 @@ import KeyManager from "../../utils/KeyManager";
  * @author Ingo Andelhofs
  */
 interface IProps extends React.HTMLAttributes<any> {
-  // NotebookLine data
-  data?: {
+  // Data
+  defaultData?: {
     subType: "p" | "h1" | "h2" | "h3" | string,
-    content: string,
+    html: string,
+    text: string,
+    cursor: number,
   },
 
-  // Notebook info
+  // Notebook
   selected: boolean,
-  cursorOptions: any,
-  onChangeType: any,
+  position: number,
+  cursor: any,
+
+  // NotebookLine
+  onLineTypeChange: (type: string) => void,
+  onPaste: (event: React.ClipboardEvent) => void,
 }
 
 
@@ -32,13 +38,14 @@ interface IProps extends React.HTMLAttributes<any> {
  * @author Ingo Andelhofs
  */
 interface IState {
-  type?: "p" | "h1" | "h2" | "h3" | string,
-  content: string,
-
+  // Data
+  subType: "p" | "h1" | "h2" | "h3" | string,
+  html: string,
   text: any,
-  length: number,
+  cursor: number,
+
+  // Temporary state
   spacePressed: boolean,
-  caretPosition?: number,
 }
 
 
@@ -57,20 +64,28 @@ class TextLine extends Component<IProps, IState> {
 
   // Initial State
   public state: IState = {
+    subType: "p",
+    html: "",
     text: "",
-    content: "",
-    length: 0,
-    caretPosition: 0,
-    type: "p",
+    cursor: 0,
+
     spacePressed: false,
   }
 
 
+  // Getters
+  private get element(): HTMLDivElement {
+    return this.ref.current!;
+  }
+  private get maxCursor(): number {
+    return this.state.text.length;
+  }
+
 
   // Methods
   private updateCursorPosition = () => {
-    const caretPosition = Cursor.getPosition(this.ref.current);
-    this.setState(() => { return { caretPosition, }; });
+    const caretPosition = Cursor.getPosition(this.element);
+    this.setState(() => { return { cursor: caretPosition, }; });
   }
 
 
@@ -83,28 +98,23 @@ class TextLine extends Component<IProps, IState> {
   // OnChange handlers
   private onChange = () => {
    // Update state
-    const element = this.ref.current!;
-    const text = element!.innerText;
-    const content = element!.innerHTML;
-    const length = element!.textContent!.length;
-    const caretPosition = Cursor.getPosition(this.ref.current);
+    const text = this.element.innerText;
+    const content = this.element.innerHTML;
+    const caretPosition = Cursor.getPosition(this.element);
 
-    this.setState(() => {
-      return {
+    this.setState(() => ({
         text,
-        content,
-        length,
-        caretPosition,
-      }
-    }, () => {
+        html: content,
+        cursor: caretPosition,
+    }), () => {
       this.handleTypeChange();
       // this.parseText();
     });
   }
 
   private handleTypeChange = () => {
-    const {text, content, spacePressed} = this.state;
-    const caretPosition = Cursor.getPosition(this.ref.current);
+    const {text, html, spacePressed} = this.state;
+    const caretPosition = Cursor.getPosition(this.element);
 
 
     // Handle inner line type change
@@ -120,13 +130,13 @@ class TextLine extends Component<IProps, IState> {
 
         // Don't remove all text only the space!
         // Sometimes the space char is represented as &nbsp;
-        let extraRemove = (content.substr(keyword.length, 1) === " ") ? " ".length : "&nbsp;".length;
+        let extraRemove = (html.substr(keyword.length, 1) === " ") ? " ".length : "&nbsp;".length;
 
-        let removedKeywordContent = content.substring(keyword.length + extraRemove);
+        let removedKeywordContent = html.substring(keyword.length + extraRemove);
         this.setState(() => {
           return {
-            content: removedKeywordContent,
-            caretPosition: 0,
+            html: removedKeywordContent,
+            cursor: 0,
           };
         });
 
@@ -138,23 +148,23 @@ class TextLine extends Component<IProps, IState> {
     // Handle line type change
     for (const keyword of Object.keys(StringRenderMap)) {
       if (this.changedKeywordIs(keyword, text, caretPosition)) {
-        this.props.onChangeType(keyword);
+        this.props.onLineTypeChange(keyword);
         return;
       }
     }
   }
 
   private parseText = () => {
-    let {text, content} = this.state;
+    let {text, html} = this.state;
 
-    let cep = new ContentEditableParser(text, content, Cursor.getPosition(this.ref.current));
+    let cep = new ContentEditableParser(text, html, Cursor.getPosition(this.element));
 
     let delimiter = /(\$[^$]*\$)/; /* Opening and closing $ */
     let parseCallback = (string: string) => {
       string = string.split("$").join("");
 
       let MJP = new MathJaxParser();
-      MJP.setContainerOptions(this.ref.current);
+      MJP.setContainerOptions(this.element);
       return MJP.parse(string);
     }
 
@@ -163,7 +173,7 @@ class TextLine extends Component<IProps, IState> {
 
   private setType = (type: string) => {
     console.log("Type Changed");
-    this.setState(() => { return { type } });
+    this.setState(() => { return { subType: type } });
   }
 
   private changedKeywordIs = (keyword: string, text: string, caretPosition: number) => {
@@ -202,7 +212,7 @@ class TextLine extends Component<IProps, IState> {
 
   private onBackspace = (event: React.KeyboardEvent) => {
     const {text} = this.state;
-    const cursorPosition = Cursor.getPosition(this.ref.current);
+    const cursorPosition = Cursor.getPosition(this.element);
 
     const beforeCursor = text.substring(0, cursorPosition);
     const afterCursor = text.substring(cursorPosition);
@@ -217,22 +227,23 @@ class TextLine extends Component<IProps, IState> {
     }
   }
 
-  private onSpace = (event: React.KeyboardEvent) => {
+  private onSpace = () => {
+    // event: React.KeyboardEvent
     this.setState(() => { return { spacePressed: true, }; });
   }
 
   private onArrowUp = (event: React.KeyboardEvent) => {
     event.preventDefault();
-    this.context.selectPrevLine(Cursor.getPosition(this.ref.current));
+    this.context.selectPrevLine(Cursor.getPosition(this.element));
   }
 
   private onArrowDown = (event: React.KeyboardEvent) => {
     event.preventDefault();
-    this.context.selectNextLine(Cursor.getPosition(this.ref.current));
+    this.context.selectNextLine(Cursor.getPosition(this.element));
   }
 
   private onArrowLeft = (event: React.KeyboardEvent) => {
-    if (Cursor.getPosition(this.ref.current) === 0) {
+    if (Cursor.getPosition(this.element) === 0) {
       event.preventDefault();
       this.context.selectPrevLine(Infinity);
     }
@@ -241,7 +252,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private onArrowRight = (event: React.KeyboardEvent) => {
-    if (Cursor.getPosition(this.ref.current) === this.state.text.length) {
+    if (Cursor.getPosition(this.element) === this.maxCursor) {
       event.preventDefault();
       this.context.selectNextLine(0);
     }
@@ -255,15 +266,9 @@ class TextLine extends Component<IProps, IState> {
    * Ensures that this TextLine is focussed
    */
   private ensureSelected() {
-    if (!this.ref.current)
-      return;
-
-    if (this.props.selected)
-      this.ref.current.focus();
-    else {
-      // POSSIBLE-BUG: Does not un-focus correctly
-      this.ref.current.blur();
-    }
+    this.props.selected ?
+      this.element.focus() :
+      this.element.blur();
   }
 
 
@@ -271,7 +276,7 @@ class TextLine extends Component<IProps, IState> {
    * Called if the component mounts
    */
   public componentDidMount() {
-    console.log("TextLine mounted");
+    // console.log("TextLine mounted");
     this.ensureSelected();
   }
 
@@ -280,27 +285,35 @@ class TextLine extends Component<IProps, IState> {
    * Called if the components updates
    */
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
-    console.log("TextLine updated");
+    // console.log("TextLine updated");
     this.ensureSelected();
 
     if (this.props.selected) {
-      this.ref.current!.innerHTML = this.state.content;
+      this.element.innerHTML = this.state.html;
 
       // Updated caret options
-      if (prevProps.cursorOptions !== this.props.cursorOptions) {
-        // POSSIBLE-BUG: cursor moves weirdly
-        console.log("Caret Options change");
-
-        let chars = Math.min(this.props.cursorOptions, this.state.length);
-        Cursor.setPosition(this.ref.current, chars);
+      if (prevProps.cursor !== this.props.cursor) {
+        let chars = Math.min(this.props.cursor, this.maxCursor);
+        Cursor.setPosition(this.element, chars);
       }
       else {
-        Cursor.setPosition(this.ref.current, this.state.caretPosition!);
+        Cursor.setPosition(this.element, this.state.cursor!);
       }
 
     }
     else {
-      this.ref.current!.innerHTML = this.parseText();
+      this.element.innerHTML = this.parseText();
+    }
+
+    // Export if content updates
+    // TODO: If prevState !== state
+    if (prevState.html !== this.state.html) {
+      this.context.exportLine(this.props.position, "txt", {
+        subType: this.state.subType,
+        html: this.state.html,
+        text: this.state.text,
+        cursor: this.state.cursor,
+      });
     }
   }
 
@@ -315,12 +328,14 @@ class TextLine extends Component<IProps, IState> {
       className={selectedClass}
       ref={this.ref}
 
-      data-line-type={this.state.type}
+      data-line-type={this.state.subType}
 
       onInput={this.onChange}
       onKeyDown={this.onKeyDown}
       onKeyUp={this.onKeyUp}
       onMouseUp={this.onMouseUp}
+
+      onPaste={this.props.onPaste}
 
       spellCheck={false}
       contentEditable
