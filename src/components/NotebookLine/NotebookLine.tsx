@@ -171,6 +171,9 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
 
+  /**
+   * Render the dropdown menu and line button
+   */
   private renderDropdown(): ReactNode {
     return <button
       ref={this.buttonRef}

@@ -322,8 +322,10 @@ class TextLine extends Component<IProps, IState> {
     }
 
 
-    if (this.props.defaultData?.subType && this.props.defaultData?.subType !== this.state.subType) {
-      console.log("Change");
+    if (this.props.defaultData?.subType &&
+        this.props.defaultData?.subType !== this.state.subType &&
+        this.props.defaultData?.subType !== prevProps.defaultData?.subType)
+    {
       this.setState(() => ({subType: this.props.defaultData?.subType!}));
     }
   }
