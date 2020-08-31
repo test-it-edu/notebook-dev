@@ -1,4 +1,5 @@
 import React, {Component, ReactNode} from 'react';
+import Focusable from "../Focusable/Focusable";
 
 
 
@@ -7,8 +8,18 @@ import React, {Component, ReactNode} from 'react';
  * @author Ingo Andelhofs
  */
 interface IProps extends React.HTMLAttributes<HTMLElement> {
-  type: "lines" | "grid",
-  amount: number,
+  defaultData: {
+    subType: "lines" | "grid",
+    amountOfLines: number,
+  },
+
+  // Notebook
+  selected: boolean,
+  position: number,
+
+  // NotebookLine
+  onLineTypeChange: (type: string) => void,
+  onPaste: (pasteData: any) => void,
 }
 
 
@@ -18,8 +29,8 @@ interface IProps extends React.HTMLAttributes<HTMLElement> {
  * @author Ingo Andelhofs
  */
 interface IState {
-  type: "lines" | "grid" | string,
-  amount: number,
+  subType: "lines" | "grid",
+  amountOfLines: number | string,
 }
 
 
@@ -30,22 +41,76 @@ interface IState {
  */
 class LinesLine extends Component<IProps, IState> {
   private ref = React.createRef<HTMLDivElement>();
-
   public state: IState = {
-    type: "lines",
-    amount: 2,
+    subType: "lines",
+    amountOfLines: 3,
   }
-
   public static defaultProps = {
-    type: "lines",
-    amount: 2,
+    defaultData: {
+      subType: "lines",
+      amountOfLines: 3,
+    },
   }
 
 
+  private onChangeAmountOfLines = (event: React.FormEvent) => {
+    let value = (event.target as HTMLInputElement).value;
+    let parsedValue = Number.parseInt(value);
+
+    this.setState(() => ({
+      amountOfLines: Number.isNaN(parsedValue) ? "" : parsedValue,
+    }))
+  }
+
+
+  private onToggleSubType = () => {
+    this.setState((prevState) => ({
+      subType: prevState.subType === "lines" ? "grid" : "lines",
+    }))
+  }
+
+
+  /**
+   * Called if the component mounts
+   */
+  public componentDidMount() {
+    this.setState(() => {
+      const { subType, amountOfLines } = this.props.defaultData;
+      return { subType, amountOfLines };
+    });
+  }
+
+
+  /**
+   * Render as grid
+   */
+  public renderGrid(): ReactNode {
+    let rows = [];
+    let cols = [];
+
+    for (let i = 0; i < 30; ++i) {
+      cols.push(<td key={i}/>);
+    }
+
+    for (let i = 0; i < this.state.amountOfLines; ++i) {
+      rows.push(<tr key={i}>{cols}</tr>);
+    }
+
+    return <table className={"grid"}>
+      <tbody>
+      {rows}
+      </tbody>
+    </table>;
+  }
+
+
+  /**
+   * Render as lines
+   */
   public renderLines(): ReactNode {
     let rows = [];
 
-    for (let i = 0; i < this.state.amount; ++i) {
+    for (let i = 0; i < this.state.amountOfLines; ++i) {
       rows.push(<tr key={i}><td/></tr>);
     }
 
@@ -53,23 +118,48 @@ class LinesLine extends Component<IProps, IState> {
       <tbody>
         {rows}
       </tbody>
-    </table>
+    </table>;
   }
 
-  public componentDidMount() {
-    this.setState({
-      type: this.props.type,
-      amount: this.props.amount,
-    });
+
+  /**
+   * Render the container
+   */
+  private renderContainer(): ReactNode {
+    return <div>
+      <div className="action-buttons">
+        <button
+          onClick={this.onToggleSubType}
+          children={this.state.subType === "lines" ? "Change to grid" : "Change to lines"}
+        />
+        &nbsp;
+        &nbsp;
+
+        <label>
+          Amount of lines: <input
+            type="number"
+            value={this.state.amountOfLines.toString()}
+            onChange={this.onChangeAmountOfLines}
+          />
+        </label>
+
+      </div>
+      <div
+        className="grid-wrapper"
+        children={this.state.subType === "lines" ? this.renderLines() : this.renderGrid()}
+      />
+    </div>
   }
 
+
+  /**
+   * Render the component
+   */
   public render(): ReactNode {
-    return <div
-      ref={this.ref}
-      tabIndex={0}
-    >
-      {this.renderLines()}
-    </div>;
+    return <Focusable
+      innerRef={this.ref}
+      children={this.renderContainer()}
+    />;
   }
 }
 

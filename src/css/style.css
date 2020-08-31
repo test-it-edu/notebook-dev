@@ -37,9 +37,10 @@
 
     padding: 32px 0;
 
-    margin: 0 auto;
     width: 100%;
     max-width: 1180px;
+
+    margin: 0 auto 20vh;
 }
 
 .notebook * {
@@ -93,6 +94,19 @@ table.lines tbody td {
 }
 
 
+table.grid {
+    border-collapse: collapse;
+}
+
+table.grid tbody td {
+    height: 25px;
+    border: 1px solid #111111;
+
+    width: calc(100% / 50);
+    border-spacing: 0;
+}
+
+
 
 
 
@@ -125,6 +139,7 @@ table.lines tbody td {
 /* Action buttons */
 .--not-selected > * > .action-buttons {
     opacity: 0.4;
+    display: none;
 }
 
 .action-buttons {
