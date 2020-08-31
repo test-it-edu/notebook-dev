@@ -1,5 +1,6 @@
 import React, {Component, ReactNode} from 'react';
 import Focusable from "../Focusable/Focusable";
+import clsx from "clsx";
 
 
 
@@ -156,8 +157,15 @@ class LinesLine extends Component<IProps, IState> {
    * Render the component
    */
   public render(): ReactNode {
+    let classNames = clsx({
+      "lines-line": true,
+      "--selected": this.props.selected,
+      "--not-selected": !this.props.selected
+    });
+
     return <Focusable
       innerRef={this.ref}
+      className={classNames}
       children={this.renderContainer()}
     />;
   }

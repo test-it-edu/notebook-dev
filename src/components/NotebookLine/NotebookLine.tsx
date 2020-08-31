@@ -44,6 +44,8 @@ interface IState {
   type: string,
   data: any,
   props: any,
+
+  dropdownActive: boolean,
 }
 
 
@@ -55,6 +57,8 @@ interface IState {
  */
 class NotebookLine extends Component<IProps, IState> {
   public static contextType = NotebookContext;
+  public buttonRef = React.createRef<any>();
+
   public static defaultProps: IProps | any = {
     defaultType: "txt",
     defaultData: {
@@ -70,6 +74,7 @@ class NotebookLine extends Component<IProps, IState> {
     },
 
     props: {},
+    dropdownActive: false,
   }
 
 
@@ -116,6 +121,25 @@ class NotebookLine extends Component<IProps, IState> {
       type: this.props.defaultType,
       data: this.props.defaultData,
     }));
+
+
+    // Click outside to close dropdown
+    document.addEventListener("click", (event: MouseEvent) => {
+        const isDescendant = (parent: any, child: any) => {
+        let node = child;
+        while (node != null) {
+          if (node === parent) {
+            return true;
+          }
+          node = node.parentNode;
+        }
+        return false;
+      }
+
+      if (!isDescendant(this.buttonRef.current, event.target)) {
+        this.setState(() => ({dropdownActive: false}));
+      }
+    });
   }
 
 
@@ -147,15 +171,52 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
 
+  private renderDropdown(): ReactNode {
+    return <button
+      ref={this.buttonRef}
+      className={this.state.dropdownActive ? " --active" : ""}
+      onClick={() => this.setState(() => ({ dropdownActive: !this.state.dropdownActive }))}
+    >
+      <i className="fas fa-ellipsis-v"/>
+      <div className={`options-dropdown${this.state.dropdownActive ? " --active" : ""}`}>
+        <ul>
+          <li
+            onClick={() => this.setType("txt", { defaultData: { subType: "p" } })}>
+            <i className="fas fa-paragraph"/> Paragraph</li>
+          <li
+            onClick={() => this.setType("txt", { defaultData: { subType: "h1" } })}>
+            <i className="fas fa-heading"/> Header 1</li>
+          <li
+            onClick={() => this.setType("txt", { defaultData: { subType: "h2" } })}>
+            <i className="fas fa-heading"/> Header 2</li>
+          <li
+            onClick={() => this.setType("txt", { defaultData: { subType: "h3" } })}>
+            <i className="fas fa-heading"/> Header 3</li>
+        </ul>
+
+        <ul>
+          <li onClick={() => this.setType("img")}><i className="fas fa-image"/> Image</li>
+          <li onClick={() => this.setType("line")}><i className="fas fa-grip-lines"/> Lines</li>
+        </ul>
+      </div>
+    </button>;
+  }
+
+
   /**
    * Render this component
    */
   public render(): ReactNode {
-    return <div
-      className={"line-wrapper notebook__line"}
-      onClick={this.select}
-      children={this.renderLine()}
-    />;
+    const selectedClass = this.props.selected ? " --selected" : "";
+
+    return <div className={"notebook-line" + selectedClass}>
+      <div className="type-button">
+        {this.renderDropdown()}
+      </div>
+      <div onClick={this.select} className="line-wrapper">
+        {this.renderLine()}
+      </div>
+    </div>;
   }
 }
 

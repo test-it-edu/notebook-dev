@@ -85,7 +85,9 @@ class TextLine extends Component<IProps, IState> {
   // Methods
   private updateCursorPosition = () => {
     const caretPosition = Cursor.getPosition(this.element);
-    this.setState(() => { return { cursor: caretPosition, }; });
+    console.log("C: " + caretPosition);
+
+    this.setState(() => ({ cursor: caretPosition }));
   }
 
 
@@ -254,6 +256,7 @@ class TextLine extends Component<IProps, IState> {
       this.context.selectNextLine(0);
     }
 
+    console.log(Cursor.getPosition(this.element));
     this.updateCursorPosition();
   }
 
@@ -317,6 +320,12 @@ class TextLine extends Component<IProps, IState> {
     if (prevState.html !== this.state.html) {
       this.export();
     }
+
+
+    if (this.props.defaultData?.subType && this.props.defaultData?.subType !== this.state.subType) {
+      console.log("Change");
+      this.setState(() => ({subType: this.props.defaultData?.subType!}));
+    }
   }
 
 
@@ -327,7 +336,7 @@ class TextLine extends Component<IProps, IState> {
     const selectedClass = this.props.selected ? "--selected" : "--not-selected";
 
     return <div
-      className={selectedClass}
+      className={selectedClass + "line text-line"}
       ref={this.ref}
 
       data-line-type={this.state.subType}

@@ -82,8 +82,7 @@ class Cursor {
       range.setEnd(node, chars.count);
     }
     else if (node && chars.count > 0) {
-      // Handle TEXT node
-      if (node.nodeType === Node.TEXT_NODE) {
+      if (node.nodeType === Node.TEXT_NODE) { // Handle TEXT node
         if (node.textContent.length < chars.count) {
           chars.count -= node.textContent.length;
         }
@@ -92,9 +91,16 @@ class Cursor {
           chars.count = 0;
         }
       }
-
-      // Handle ELEMENT node
-      else {
+      else if (node.nodeName === "BR") {
+        if (chars.count > 0) {
+          chars.count--;
+        }
+        else {
+          range.setEnd(node, chars.count);
+          chars.count = 0;
+        }
+      }
+      else { // Handle ELEMENT node
         for (let lp = 0; lp < node.childNodes.length; lp++) {
           // Extend the range of the node by adding the range of the child nodes
           range = Cursor._createRange(node.childNodes[lp], chars, range);
