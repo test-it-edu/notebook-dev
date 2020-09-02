@@ -1,5 +1,4 @@
 import React, {Component, ReactNode} from 'react';
-import Cursor from "../../utils/Cursor";
 
 
 
@@ -85,11 +84,10 @@ class ContentEditable extends Component<IProps, IState> {
    * The input change handler
    */
   private onInput = () => {
-    // Update
-    this.setState(() => ({
-      html: this.element.innerHTML,
-      cursor: Cursor.getPosition(this.element),
-    }));
+    // this.setState(() => ({
+    //   html: this.element.innerHTML,
+    //   cursor: Cursor.getPosition(this.element),
+    // }));
   }
 
 
@@ -98,7 +96,7 @@ class ContentEditable extends Component<IProps, IState> {
    * Moves the cursor to the position of the current state
    */
   private moveCursorToCurrentPosition = () => {
-    Cursor.setPosition(this.element, this.state.cursor);
+    // Cursor.setPosition(this.element, this.state.cursor);
   }
 
 

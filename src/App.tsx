@@ -1,6 +1,7 @@
 import React, {useRef} from 'react';
-import Notebook from "./components/Notebook/Notebook";
 import "./css/style.css";
+
+import Notebook from "./components/Notebook/Notebook";
 
 
 function App () {
@@ -14,9 +15,7 @@ function App () {
   return <section>
     <section className="notebook-option-bar">
       <button onClick={onExportToConsole}>Export to console</button>
-
     </section>
-
 
     <Notebook ref={notebookRef}/>
   </section>;

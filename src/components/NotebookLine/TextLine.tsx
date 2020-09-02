@@ -85,7 +85,6 @@ class TextLine extends Component<IProps, IState> {
   // Methods
   private updateCursorPosition = () => {
     const caretPosition = Cursor.getPosition(this.element);
-    console.log("C: " + caretPosition);
 
     this.setState(() => ({ cursor: caretPosition }));
   }

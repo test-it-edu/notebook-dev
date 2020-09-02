@@ -26,6 +26,7 @@ class Cursor {
           }
 
           if (node.previousSibling) {
+            console.log("Cursor:getPosition: ", node.nodeName);
             node = node.previousSibling;
             charCount += node!.textContent!.length;
           }

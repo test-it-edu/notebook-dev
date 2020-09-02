@@ -242,6 +242,8 @@ table.grid tbody td {
 
     border: 2px solid #111111;
     outline: none;
+
+    /*white-space: pre;*/
 }
 
 
