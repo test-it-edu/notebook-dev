@@ -1,5 +1,7 @@
 import React, {Component, ReactNode} from 'react';
 import Focusable from "../Focusable/Focusable";
+import KeyManager from "../../utils/KeyManager";
+import {NotebookContext} from "../Notebook/NotebookContext";
 import clsx from "clsx";
 
 
@@ -24,7 +26,6 @@ interface IProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 
-
 /**
  * interface IState
  * @author Ingo Andelhofs
@@ -41,11 +42,15 @@ interface IState {
  * @author Ingo Andelhofs
  */
 class LinesLine extends Component<IProps, IState> {
+  // Properties
   private ref = React.createRef<HTMLDivElement>();
   public state: IState = {
     subType: "lines",
     amountOfLines: 3,
   }
+
+  // Static properties
+  public static contextType = NotebookContext;
   public static defaultProps = {
     defaultData: {
       subType: "lines",
@@ -54,7 +59,61 @@ class LinesLine extends Component<IProps, IState> {
   }
 
 
-  private onChangeAmountOfLines = (event: React.FormEvent) => {
+  // Event handlers
+  /**
+   * Handles the click event
+   */
+  private onClick = (): void => {
+    this.onSelect();
+  }
+
+  /**
+   * Handles the selection of this element
+   */
+  private onSelect = (): void => {
+    this.context.selectLine(this.props.position);
+  }
+
+  /**
+   * Handles the KeyDown event
+   * @param event The KeyboardEvent
+   */
+  private onKeyDown = (event: React.KeyboardEvent): void => {
+    let keyManager = new KeyManager(event);
+    keyManager.on({
+      "ArrowUp": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectPrevLine(Infinity)
+      },
+      "ArrowDown": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectNextLine(Infinity)
+      },
+      "ArrowLeft": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectPrevLine(Infinity)
+      },
+      "ArrowRight": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.selectNextLine(0)
+      },
+
+      "Enter": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.createLine();
+      },
+      "Backspace": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.context.deleteLine(Infinity)
+      },
+    });
+  }
+
+  /**
+   * Handles the change of amount of lines of this element
+   * @param event The FormEvent of the input element
+   */
+  private onChangeAmountOfLines = (event: React.FormEvent): void => {
     let value = (event.target as HTMLInputElement).value;
     let parsedValue = Number.parseInt(value);
 
@@ -63,18 +122,21 @@ class LinesLine extends Component<IProps, IState> {
     }))
   }
 
-
-  private onToggleSubType = () => {
+  /**
+   * Handles the change of type form lines to grid or grid to lines
+   */
+  private onToggleSubType = (): void => {
     this.setState((prevState) => ({
       subType: prevState.subType === "lines" ? "grid" : "lines",
     }))
   }
 
 
+  // Lifecycle methods
   /**
    * Called if the component mounts
    */
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.setState(() => {
       const { subType, amountOfLines } = this.props.defaultData;
       return { subType, amountOfLines };
@@ -82,6 +144,7 @@ class LinesLine extends Component<IProps, IState> {
   }
 
 
+  // Render methods
   /**
    * Render as grid
    */
@@ -104,7 +167,6 @@ class LinesLine extends Component<IProps, IState> {
     </table>;
   }
 
-
   /**
    * Render as lines
    */
@@ -121,7 +183,6 @@ class LinesLine extends Component<IProps, IState> {
       </tbody>
     </table>;
   }
-
 
   /**
    * Render the container
@@ -152,7 +213,6 @@ class LinesLine extends Component<IProps, IState> {
     </div>
   }
 
-
   /**
    * Render the component
    */
@@ -167,6 +227,11 @@ class LinesLine extends Component<IProps, IState> {
       innerRef={this.ref}
       className={classNames}
       children={this.renderContainer()}
+
+      focus={this.props.selected}
+
+      onClick={this.onClick}
+      onKeyDown={this.onKeyDown}
     />;
   }
 }

@@ -1,10 +1,10 @@
 import React, {Component, ReactNode} from 'react';
-import Cursor from "../../utils/Cursor";
-import {NotebookContext} from "../Notebook/NotebookContext";
 import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathParser from "../../utils/MathParser";
-import {StringRenderMap} from "./NotebookLine";
 import KeyManager from "../../utils/KeyManager";
+import Cursor from "../../utils/Cursor";
+import {NotebookContext} from "../Notebook/NotebookContext";
+import {StringRenderMap} from "./NotebookLine";
 
 
 
@@ -30,7 +30,6 @@ interface IProps extends React.HTMLAttributes<any> {
   onLineTypeChange: (type: string) => void,
   onPaste: (event: React.ClipboardEvent) => void,
 }
-
 
 
 /**
@@ -59,10 +58,7 @@ interface IState {
  */
 class TextLine extends Component<IProps, IState> {
   // Properties
-  public static contextType = NotebookContext;
   private ref = React.createRef<HTMLDivElement>();
-
-  // Initial State
   public state: IState = {
     subType: "p",
     html: "",
@@ -72,6 +68,9 @@ class TextLine extends Component<IProps, IState> {
     spacePressed: false,
   }
 
+  // Static properties
+  public static contextType = NotebookContext;
+  public static defaultProps = {};
 
   // Getters
   private get element(): HTMLDivElement {
@@ -89,12 +88,20 @@ class TextLine extends Component<IProps, IState> {
     this.setState(() => ({ cursor: caretPosition }));
   }
 
-
+  // Event Handlers
   // OnMouseUp Handlers
   private onMouseUp = () => {
     this.updateCursorPosition();
   }
 
+  // OnClick Handlers
+  private onClick = () => {
+    this.onSelect();
+  }
+
+  private onSelect = () => {
+    this.context.selectLine(this.props.position);
+  }
 
   // OnChange handlers
   private onChange = () => {
@@ -181,12 +188,10 @@ class TextLine extends Component<IProps, IState> {
     return (firstKeyword === keyword && caretPosition === keywordLength + 1);
   }
 
-
   // KeyUp Handlers
   private onKeyUp = () => {
     this.updateCursorPosition();
   }
-
 
   // KeyDown Handlers
   private onKeyDown = (event: React.KeyboardEvent) => {
@@ -260,7 +265,11 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
-  private export() {
+  // Methods
+  /**
+   * Export the component data to the Notebook
+   */
+  private export(): void {
     this.context.exportLine(this.props.position, "txt", {
       subType: this.state.subType,
       html: this.state.html,
@@ -269,31 +278,30 @@ class TextLine extends Component<IProps, IState> {
     });
   }
 
-
   /**
    * Ensures that this TextLine is focussed
    */
-  private ensureSelected() {
+  private ensureSelected(): void {
     this.props.selected ?
       this.element.focus() :
       this.element.blur();
   }
 
 
+  // Lifecycle methods
   /**
    * Called if the component mounts
    */
-  public componentDidMount() {
+  public componentDidMount(): void {
     // console.log("TextLine mounted");
     this.ensureSelected();
     this.export();
   }
 
-
   /**
    * Called if the components updates
    */
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IProps, prevState: IState): void {
     // console.log("TextLine updated");
     this.ensureSelected();
 
@@ -330,6 +338,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
+  // Render methods
   /**
    * Render the component
    */
@@ -346,6 +355,7 @@ class TextLine extends Component<IProps, IState> {
       onKeyDown={this.onKeyDown}
       onKeyUp={this.onKeyUp}
       onMouseUp={this.onMouseUp}
+      onClick={this.onClick}
 
       onPaste={this.props.onPaste}
 

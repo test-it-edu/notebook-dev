@@ -18,21 +18,23 @@ interface IProps extends React.HTMLAttributes<any> {
  * @author Ingo Andelhofs
  */
 class Focusable extends Component<IProps, any> {
+  // Properties
   public static defaultProps: IProps = {
     innerRef: React.createRef<HTMLDivElement>(),
     focus: false,
   }
 
   // Getters
-  private get element() {
+  private get element(): HTMLDivElement {
     return this.props.innerRef.current!;
   }
 
 
+  // Lifecycle methods
   /**
    * Ensures that the element is focussed
    */
-  private ensureFocus() {
+  private ensureFocus(): void {
     this.props.focus ?
       this.element.focus() :
       this.element.blur();
@@ -41,7 +43,7 @@ class Focusable extends Component<IProps, any> {
   /**
    * Called if the component mounts
    */
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.ensureFocus();
   }
 
@@ -49,11 +51,12 @@ class Focusable extends Component<IProps, any> {
    * Called if the component mounts
    * @param prevProps The previous props
    */
-  public componentDidUpdate(prevProps: Readonly<IProps>) {
+  public componentDidUpdate(prevProps: Readonly<IProps>): void {
     this.ensureFocus();
   }
 
 
+  // Render methods
   /**
    * Render the component
    */

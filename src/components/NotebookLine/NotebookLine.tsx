@@ -1,9 +1,9 @@
 import React, {Component, ReactNode} from 'react';
-import {NotebookContext} from "../Notebook/NotebookContext";
-import TextLine from "./TextLine";
+import ClipboardManager from "../../utils/ClipboardManager";
 import ImageLine from "./ImageLine";
 import LinesLine from "./LinesLine";
-import ClipboardManager from "../../utils/ClipboardManager";
+import TextLine from "./TextLine";
+import {NotebookContext} from "../Notebook/NotebookContext";
 
 
 
@@ -16,7 +16,6 @@ export const StringRenderMap = {
   "img": ImageLine,
   "line": LinesLine,
 };
-
 
 
 /**
@@ -33,7 +32,6 @@ interface IProps extends React.HTMLAttributes<any>  {
   last?: boolean,
   cursor: number,
 }
-
 
 
 /**
@@ -56,16 +54,8 @@ interface IState {
  * @author Ingo Andelhofs
  */
 class NotebookLine extends Component<IProps, IState> {
-  public static contextType = NotebookContext;
+  // Properties
   public buttonRef = React.createRef<any>();
-
-  public static defaultProps: IProps | any = {
-    defaultType: "txt",
-    defaultData: {
-      subType: "p",
-      html: "",
-    },
-  }
   public state: IState = {
     type: "txt",
     data: {
@@ -77,16 +67,18 @@ class NotebookLine extends Component<IProps, IState> {
     dropdownActive: false,
   }
 
-
-  /**
-   * Select this line in the Notebook
-   * @TODO: Move selection to the node itself
-   */
-  private select = () => {
-    this.context.selectLine(this.props.position);
+  // Static properties
+  public static contextType = NotebookContext;
+  public static defaultProps: IProps | any = {
+    defaultType: "txt",
+    defaultData: {
+      subType: "p",
+      html: "",
+    },
   }
 
 
+  // State modification methods
   /**
    * Set the LineType
    * @param type The LineType you want to set
@@ -97,6 +89,11 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
 
+  // Event Handlers
+  /**
+   * Handles the paste event
+   * @param event The clipboard event
+   */
   private onPaste = (event: React.ClipboardEvent): void => {
     ClipboardManager.retrieveImageAsBase64(event, (base64: any) => {
       if (base64) {
@@ -110,6 +107,7 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
 
+  // Lifecycle methods
   /**
    * Called if the component mounts
    */
@@ -142,7 +140,6 @@ class NotebookLine extends Component<IProps, IState> {
     });
   }
 
-
   /**
    * Called if the component is updated
    * @param prevProps The previous props
@@ -153,6 +150,7 @@ class NotebookLine extends Component<IProps, IState> {
   }
 
 
+  // Render methods
   /**
    * Renders the correct line by it's LineType
    */
@@ -169,7 +167,6 @@ class NotebookLine extends Component<IProps, IState> {
 
     return <Element {...props} />
   }
-
 
   /**
    * Render the dropdown menu and line button
@@ -205,7 +202,6 @@ class NotebookLine extends Component<IProps, IState> {
     </button>;
   }
 
-
   /**
    * Render this component
    */
@@ -216,7 +212,7 @@ class NotebookLine extends Component<IProps, IState> {
       <div className="type-button">
         {this.renderDropdown()}
       </div>
-      <div onClick={this.select} className="line-wrapper">
+      <div className="line-wrapper">
         {this.renderLine()}
       </div>
     </div>;
