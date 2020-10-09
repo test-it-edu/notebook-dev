@@ -297,11 +297,3 @@ table.grid tbody td {
     font-weight: bold;
     cursor: pointer;
 }
-
-
-
-
-/* Outlines */
-div, button {
-    outline: none;
-}
