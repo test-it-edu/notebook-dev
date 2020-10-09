@@ -16,7 +16,6 @@ interface IProps extends React.HTMLAttributes<any> {
 }
 
 
-
 /**
  * interface IState
  * @author Ingo Andelhofs
@@ -27,8 +26,6 @@ interface IState {
   selection: {},
   length: number,
 }
-
-
 
 
 
@@ -45,6 +42,15 @@ interface IState {
  *   defaultCursor={2} />
  */
 class ContentEditable extends Component<IProps, IState> {
+  // Properties
+  public state: IState = {
+    html: "",
+    cursor: 0,
+    selection: {},
+    length: 0,
+  }
+
+  // Static properties
   public static defaultProps: IProps = {
     defaultHTML: "",
     defaultCursor: 0,
@@ -53,22 +59,14 @@ class ContentEditable extends Component<IProps, IState> {
 
     innerRef: React.createRef<HTMLDivElement>(),
   }
-  public state: IState = {
-    html: "",
-    cursor: 0,
-    selection: {},
-    length: 0,
-  }
 
-
-  /**
-   * Get a reference to the div element
-   */
+  // Getters
   private get element(): HTMLDivElement {
     return this.props.innerRef.current!;
   }
 
 
+  // Methods
   /**
    * Serialize the given HTML
    * @param html The HTML you want to serialize
@@ -78,8 +76,17 @@ class ContentEditable extends Component<IProps, IState> {
     return html;
   }
 
+  /**
+   * Ensures that the element is focussed
+   */
+  private ensureFocused() {
+    this.props.focus ?
+      this.element.focus() :
+      this.element.blur();
+  }
 
-  // Event listeners
+
+  // Event Handlers
   /**
    * The input change handler
    */
@@ -90,8 +97,6 @@ class ContentEditable extends Component<IProps, IState> {
     // }));
   }
 
-
-
   /**
    * Moves the cursor to the position of the current state
    */
@@ -100,13 +105,7 @@ class ContentEditable extends Component<IProps, IState> {
   }
 
 
-  private ensureFocused() {
-    this.props.focus ?
-      this.element.focus() :
-      this.element.blur();
-  }
-
-
+  // Lifecycle methods
   /**
    * Called when the component mounts
    */
@@ -120,7 +119,6 @@ class ContentEditable extends Component<IProps, IState> {
       this.moveCursorToCurrentPosition();
     });
   }
-
 
   /**
    * Called when the component updates
@@ -146,6 +144,7 @@ class ContentEditable extends Component<IProps, IState> {
   }
 
 
+  // Render methods
   /**
    * Render the component
    */

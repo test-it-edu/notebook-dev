@@ -209,7 +209,14 @@ class SelectionManager {
     if (startBound <= 0) {
       range.setStart(this.element, 0);
       startBoundFound = true;
+
+      if (startBound === endBound) {
+        range.setEnd(this.element, 0);
+        return range;
+      }
     }
+
+
 
     // Depth first setRange and count position
     while(stack.length > 0) {
@@ -234,7 +241,7 @@ class SelectionManager {
       }
 
       if (startBoundFound && endBoundFound) {
-        console.log(bounds, range.startOffset, range.endOffset, 1);
+        // console.log(bounds, range.startOffset, range.endOffset, 1);
         return range;
       }
 
@@ -253,7 +260,7 @@ class SelectionManager {
       }
     }
 
-    console.log(bounds, range.startOffset, range.endOffset, 2);
+    // console.log(bounds, range.startOffset, range.endOffset, 2);
     return range;
   }
 

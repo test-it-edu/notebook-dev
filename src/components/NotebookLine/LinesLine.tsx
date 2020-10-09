@@ -137,10 +137,15 @@ class LinesLine extends Component<IProps, IState> {
    * Called if the component mounts
    */
   public componentDidMount(): void {
-    this.setState(() => {
-      const { subType, amountOfLines } = this.props.defaultData;
-      return { subType, amountOfLines };
-    });
+
+    // Handle default data
+    // ==================================================
+    let {defaultData} = this.props;
+    let subType = defaultData?.subType || this.state.subType;
+    let amountOfLines = defaultData?.amountOfLines || this.state.amountOfLines;
+
+    this.setState(() => ({ subType, amountOfLines }));
+    // ==================================================
   }
 
 
