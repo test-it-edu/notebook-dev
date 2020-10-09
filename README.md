@@ -2,6 +2,7 @@
 Ingo Andelhofs  
 Student at Hasselt University
 
+
 ## Implemented
 - [ ] Actions
     - [ ] Import
@@ -16,10 +17,10 @@ Student at Hasselt University
         - [ ] Bold, Italic, Marked, ...
         - [ ] Math
     
--[ ] List Line
-    -[ ] Ordered list
-    -[ ] Unordered list
-    -[ ] Change list type (1. -> a.)
+- [ ] List Line
+    - [ ] Ordered list
+    - [ ] Unordered list
+    - [ ] Change list type (1. -> a.)
 
 - [ ] Image Line
     - [ ] Drag and Drop Image
@@ -39,13 +40,11 @@ Student at Hasselt University
 - [ ] Table Line
 
 
-
 ## Suggested Features
 - Block Limitations
 - Tooltip (line type options)
 - Moving Lines (up/down)
 - Extra Line wrapper actions
-
 
 
 ## Structure
@@ -54,6 +53,7 @@ Student at Hasselt University
         - TextLine
         - ImageLine
         - ...
+
 
 ### Notebook - NotebookLine (communication)
 - position
@@ -72,13 +72,8 @@ Student at Hasselt University
     - updateData
     - selected
    
+
 ### NotebookLine - *Line (communication)
 - shared actions (Notebook - NotebookLine)
 - changeLineType
 - ...
-
-
-
-
-
-
