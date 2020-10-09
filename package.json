@@ -5,6 +5,7 @@
   "dependencies": {
     "clsx": "^1.1.1",
     "katex": "^0.12.0",
+    "node-forge": "0.10.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
