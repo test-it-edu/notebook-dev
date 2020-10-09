@@ -41,9 +41,9 @@ interface IState {
   // Data
   subType: "p" | "h1" | "h2" | "h3" | string,
   html: string,
-  text: any,
 
   // Temporary state
+  // todo: Remove space pressed and replace with diff between old html and new html
   spacePressed: boolean,
 }
 
@@ -66,8 +66,6 @@ class TextLine extends Component<IProps, IState> {
   public state: IState = {
     subType: "p",
     html: "",
-    text: "",
-
     spacePressed: false,
   }
 
@@ -79,8 +77,17 @@ class TextLine extends Component<IProps, IState> {
   private get element(): HTMLDivElement {
     return this.ref.current!;
   }
+
+  private get text(): string {
+    return this.element.innerText;
+  }
+
+  private get html(): string {
+    return this.element.innerHTML;
+  }
+
   private get maxCursor(): number {
-    return this.state.text.length;
+    return this.text.length;
   }
 
 
@@ -108,21 +115,12 @@ class TextLine extends Component<IProps, IState> {
 
   // OnChange handlers
   private onChange = () => {
-   // Update state
-    const text = this.element.innerText;
-    const content = this.element.innerHTML;
-
-    this.setState(() => ({
-        text,
-        html: content,
-    }), () => {
-      this.handleTypeChange();
-      // this.parseText();
-    });
+    this.setState(() => ({ html: this.html }), this.handleTypeChange);
   }
 
   private handleTypeChange = () => {
-    const {text, html, spacePressed} = this.state;
+    const {html, spacePressed} = this.state;
+    const text = this.text;
     const caret = Cursor.getPosition(this.element);
     // let caret = this.selectionManager.findCaret() - 1;
 
@@ -173,7 +171,8 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private parseText = () => {
-    let {text, html} = this.state;
+    let {html} = this.state;
+    let text = this.text;
 
     let cep = new ContentEditableParser(text, html, Cursor.getPosition(this.element));
 
@@ -225,7 +224,7 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private onBackspace = (event: React.KeyboardEvent) => {
-    const {text} = this.state;
+    const text = this.text;
     const cursorPosition = Cursor.getPosition(this.element);
 
     const beforeCursor = text.substring(0, cursorPosition);
@@ -275,20 +274,21 @@ class TextLine extends Component<IProps, IState> {
   }
 
   private onDelete = (event: React.KeyboardEvent) => {
-    const {text} = this.state;
-    const cursorPosition = Cursor.getPosition(this.element);
-
-    const beforeCursor = text.substring(0, cursorPosition);
-    const afterCursor = text.substring(cursorPosition);
-
-    if (beforeCursor === "") {
-      if (afterCursor === "") {
-        event.preventDefault();
-        this.context.deleteLine(Infinity);
-      }
-
-      this.setType("p");
-    }
+    // todo: Handle onDelete()
+    // const text = this.text;
+    // const cursorPosition = Cursor.getPosition(this.element);
+    //
+    // const beforeCursor = text.substring(0, cursorPosition);
+    // const afterCursor = text.substring(cursorPosition);
+    //
+    // if (beforeCursor === "") {
+    //   if (afterCursor === "") {
+    //     event.preventDefault();
+    //     this.context.deleteLine(Infinity);
+    //   }
+    //
+    //   this.setType("p");
+    // }
   }
 
 
@@ -302,7 +302,6 @@ class TextLine extends Component<IProps, IState> {
     this.context.exportLine(this.props.position, "txt", {
       subType: this.state.subType,
       html: this.state.html,
-      text: this.state.text,
     });
   }
 
