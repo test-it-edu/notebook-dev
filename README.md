@@ -3,40 +3,40 @@ Ingo Andelhofs
 Student at Hasselt University
 
 ## Implemented
--[ ] Actions
-    -[ ] Import
-    -[ ] Export
-    -[ ] Copy / Paste
+- [ ] Actions
+    - [ ] Import
+    - [ ] Export
+    - [ ] Copy / Paste
     
     
--[ ] Textual Line
-    -[x] Paragraph
-    -[x] Headings
-    -[ ] Textual decoration
-        -[ ] Bold, Italic, Marked, ...
-        -[ ] Math
+- [ ] Textual Line
+    - [x] Paragraph
+    - [x] Headings
+    - [ ] Textual decoration
+        - [ ] Bold, Italic, Marked, ...
+        - [ ] Math
     
 -[ ] List Line
     -[ ] Ordered list
     -[ ] Unordered list
     -[ ] Change list type (1. -> a.)
 
--[ ] Image Line
-    -[ ] Drag and Drop Image
-    -[ ] Paste Image
-    -[ ] Upload Image
-    -[ ] Options
-        -[ ] Sizing
-        -[ ] Alignment
-        -[ ] Border
+- [ ] Image Line
+    - [ ] Drag and Drop Image
+    - [ ] Paste Image
+    - [ ] Upload Image
+    - [ ] Options
+        - [ ] Sizing
+        - [ ] Alignment
+        - [ ] Border
 
--[ ] Grid Line
-    -[ ] Lines
-    -[ ] Grid
-    -[ ] Options 
-        -[ ] Size / Spacing
+- [ ] Grid Line
+    - [ ] Lines
+    - [ ] Grid
+    - [ ] Options 
+        - [ ] Size / Spacing
 
--[ ] Table Line
+- [ ] Table Line
 
 
 
