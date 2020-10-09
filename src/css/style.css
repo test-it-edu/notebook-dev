@@ -1,3 +1,10 @@
+/* General styling */
+div, button {
+    outline: none;
+}
+
+
+
 /* Notebook Option bar */
 .notebook-option-bar {
     margin: 0 auto 8px;
