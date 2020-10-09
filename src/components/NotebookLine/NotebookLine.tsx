@@ -52,6 +52,7 @@ interface IState {
  * class NotebookLine
  * A line of the Notebook, this component handles switching to other Line types.
  * @author Ingo Andelhofs
+ * @todo: Unmount unsubscribe event listeners
  */
 class NotebookLine extends Component<IProps, IState> {
   // Properties
@@ -93,6 +94,7 @@ class NotebookLine extends Component<IProps, IState> {
   /**
    * Handles the paste event
    * @param event The clipboard event
+   * @todo: Handle other paste types
    */
   private onPaste = (event: React.ClipboardEvent): void => {
     ClipboardManager.retrieveImageAsBase64(event, (base64: any) => {
@@ -106,38 +108,47 @@ class NotebookLine extends Component<IProps, IState> {
     });
   }
 
+  private onDropdownClose = (event: MouseEvent) => {
+    const isDescendant = (parent: any, child: any) => {
+      let node = child;
+      while (node != null) {
+        if (node === parent) {
+          return true;
+        }
+        node = node.parentNode;
+      }
+      return false;
+    }
+
+    if (!isDescendant(this.buttonRef.current, event.target)) {
+      this.setState(() => ({dropdownActive: false}));
+    }
+  }
+
+
 
   // Lifecycle methods
   /**
    * Called if the component mounts
+   * @todo: Make sure type is not null
    */
   public componentDidMount() {
-    // console.log("NotebookLine mounted");
-
     // Initialize state with defaults
     this.setState(() => ({
-      type: this.props.defaultType,
+      type: this.props.defaultType || "txt",
       data: this.props.defaultData,
     }));
 
 
     // Click outside to close dropdown
-    document.addEventListener("click", (event: MouseEvent) => {
-        const isDescendant = (parent: any, child: any) => {
-        let node = child;
-        while (node != null) {
-          if (node === parent) {
-            return true;
-          }
-          node = node.parentNode;
-        }
-        return false;
-      }
+    document.addEventListener("click", this.onDropdownClose);
+  }
 
-      if (!isDescendant(this.buttonRef.current, event.target)) {
-        this.setState(() => ({dropdownActive: false}));
-      }
-    });
+  /**
+   * Called if the component unmounts
+   */
+  public componentWillUnmount() {
+    document.removeEventListener("click", this.onDropdownClose);
   }
 
   /**
@@ -145,9 +156,7 @@ class NotebookLine extends Component<IProps, IState> {
    * @param prevProps The previous props
    * @param prevState The previous state
    */
-  public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
-    // console.log("NotebookLine updated");
-  }
+  public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {}
 
 
   // Render methods
@@ -157,9 +166,10 @@ class NotebookLine extends Component<IProps, IState> {
   private renderLine(): ReactNode {
     const Element = (StringRenderMap as any)[this.state.type];
 
-    const { defaultData, ...rest } = this.props;
+    // TODO: Check order of props (this.state.props overrides this.props!!!)
+    // TODO: IMPORTANT
     const props = {
-      ...rest,
+      ...this.props,
       ...this.state.props,
       onLineTypeChange: this.setType,
       onPaste: this.onPaste,

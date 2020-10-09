@@ -20,8 +20,28 @@ interface IState {
   notebookLines: any[],
   currentSelection: number,
   lineIdCounter: number,
+
   cursor: number,
+  selection: [number, number],
 }
+
+
+
+/**
+ * Data default Lines
+ */
+const defaultId = 1;
+const defaultLines = [
+  {
+    id: 0,
+    data: {
+      subType: "h1",
+      html: "Hallo",
+      selection: [1, 1],
+    },
+    type: "txt"
+  }
+];
 
 
 
@@ -31,13 +51,16 @@ interface IState {
  */
 class Notebook extends Component<IProps, IState> {
   public state: IState = {
-    notebookLines: [{id: 0}],
-    lineIdCounter: 1,
+    notebookLines: defaultLines,
+    lineIdCounter: defaultId,
     currentSelection: 0,
+
     cursor: 0,
+    selection: [0, 0],
   }
 
 
+  // Boolean Methods
   public isLastElement = (position: number): boolean => {
     return position >= this.state.notebookLines.length - 1;
   }
@@ -47,6 +70,7 @@ class Notebook extends Component<IProps, IState> {
   }
 
 
+  // NotebookProvider Methods
   public insertNewLine = (): void => {
     const index = this.state.currentSelection;
 
@@ -117,7 +141,8 @@ class Notebook extends Component<IProps, IState> {
   }
 
 
-  public exportLine = (position: number, type: string, data: any) => {
+  // Export Methods
+  public exportLine = (position: number, type: string, data: any): void => {
     let updatedLines = this.state.notebookLines.map((element: any, index: number) => {
       if (index === position) {
         return {
@@ -139,6 +164,24 @@ class Notebook extends Component<IProps, IState> {
   }
 
 
+  // Load Method
+  public load(lines: any[]): void {
+    let currentId = this.state.lineIdCounter;
+
+    lines = lines.map((element: any, index: number) => {
+      element.id = currentId++;
+      return element;
+    });
+
+    this.setState(() => ({
+      notebookLines: lines,
+      lineIdCounter: currentId,
+    }));
+  }
+
+
+
+  // Render Methods
   /**
    * Render the all the Lines
    */
@@ -147,7 +190,10 @@ class Notebook extends Component<IProps, IState> {
 
     return this.state.notebookLines.map((element: any, index: number) => {
         return <NotebookLine
-          key={element.id} // TODO: element is not unique
+          key={element.id}
+
+          defaultData={element.data || null}
+          defaultType={element.type || "txt"}
 
           selected={currentSelection === index}
           position={index}
@@ -158,7 +204,6 @@ class Notebook extends Component<IProps, IState> {
         />
       });
   }
-
 
   /**
    * Render the component

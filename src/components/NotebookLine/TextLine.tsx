@@ -2,9 +2,11 @@ import React, {Component, ReactNode} from 'react';
 import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathParser from "../../utils/MathParser";
 import KeyManager from "../../utils/KeyManager";
-import Cursor from "../../utils/Cursor";
-import {NotebookContext} from "../Notebook/NotebookContext";
+import {NotebookContext, NotebookContextValue} from "../Notebook/NotebookContext";
 import {StringRenderMap} from "./NotebookLine";
+
+import Cursor from "../../utils/Cursor";
+import SelectionManager from "../../utils/Selection/SelectionManager";
 
 
 
@@ -17,8 +19,7 @@ interface IProps extends React.HTMLAttributes<any> {
   defaultData?: {
     subType: "p" | "h1" | "h2" | "h3" | string,
     html: string,
-    text: string,
-    cursor: number,
+    selection: [number, number],
   },
 
   // Notebook
@@ -41,7 +42,6 @@ interface IState {
   subType: "p" | "h1" | "h2" | "h3" | string,
   html: string,
   text: any,
-  cursor: number,
 
   // Temporary state
   spacePressed: boolean,
@@ -58,12 +58,15 @@ interface IState {
  */
 class TextLine extends Component<IProps, IState> {
   // Properties
+  //@ts-ignore
+  public context: NotebookContextValue;
+  //@ts-ignore
+  private selectionManager: SelectionManager;
   private ref = React.createRef<HTMLDivElement>();
   public state: IState = {
     subType: "p",
     html: "",
     text: "",
-    cursor: 0,
 
     spacePressed: false,
   }
@@ -83,22 +86,22 @@ class TextLine extends Component<IProps, IState> {
 
   // Methods
   private updateCursorPosition = () => {
-    const caretPosition = Cursor.getPosition(this.element);
-
-    this.setState(() => ({ cursor: caretPosition }));
+    // const caretPosition = Cursor.getPosition(this.element);
+    //
+    // this.setState(() => ({ cursor: caretPosition }));
   }
 
   // Event Handlers
   // OnMouseUp Handlers
   private onMouseUp = () => {
+    // TODO: Cursor?
     this.updateCursorPosition();
-  }
 
-  // OnClick Handlers
-  private onClick = () => {
+
     this.onSelect();
   }
 
+  // OnClick Handlers
   private onSelect = () => {
     this.context.selectLine(this.props.position);
   }
@@ -108,12 +111,10 @@ class TextLine extends Component<IProps, IState> {
    // Update state
     const text = this.element.innerText;
     const content = this.element.innerHTML;
-    const caretPosition = Cursor.getPosition(this.element);
 
     this.setState(() => ({
         text,
         html: content,
-        cursor: caretPosition,
     }), () => {
       this.handleTypeChange();
       // this.parseText();
@@ -122,8 +123,8 @@ class TextLine extends Component<IProps, IState> {
 
   private handleTypeChange = () => {
     const {text, html, spacePressed} = this.state;
-    const caretPosition = Cursor.getPosition(this.element);
-
+    const caret = Cursor.getPosition(this.element);
+    // let caret = this.selectionManager.findCaret() - 1;
 
     // Handle inner line type change
     const innerChangeKeywords = {
@@ -133,7 +134,7 @@ class TextLine extends Component<IProps, IState> {
     }
 
     for (const [keyword, value] of Object.entries(innerChangeKeywords)) {
-      if (spacePressed && this.changedKeywordIs(keyword, text, caretPosition)) {
+      if (spacePressed && this.changedKeywordIs(keyword, text, caret)) {
         this.setType(value);
 
         // Don't remove all text only the space!
@@ -141,10 +142,19 @@ class TextLine extends Component<IProps, IState> {
         let extraRemove = (html.substr(keyword.length, 1) === " ") ? " ".length : "&nbsp;".length;
 
         let removedKeywordContent = html.substring(keyword.length + extraRemove);
+        console.log(removedKeywordContent, html, text);
+
+        // TODO: Remove text, handle cursor
+
+        // Set html
+        // Set cursor
+        this.element.innerHTML = removedKeywordContent;
+        this.selectionManager.setCaret(0);
+
+
         this.setState(() => {
           return {
             html: removedKeywordContent,
-            cursor: 0,
           };
         });
 
@@ -155,7 +165,7 @@ class TextLine extends Component<IProps, IState> {
 
     // Handle line type change
     for (const keyword of Object.keys(StringRenderMap)) {
-      if (this.changedKeywordIs(keyword, text, caretPosition)) {
+      if (this.changedKeywordIs(keyword, text, caret)) {
         this.props.onLineTypeChange(keyword);
         return;
       }
@@ -205,6 +215,7 @@ class TextLine extends Component<IProps, IState> {
       "ArrowDown": this.onArrowDown,
       "ArrowLeft": this.onArrowLeft,
       "ArrowRight": this.onArrowRight,
+      "Delete": this.onDelete,
     });
   }
 
@@ -232,7 +243,7 @@ class TextLine extends Component<IProps, IState> {
 
   private onSpace = () => {
     // event: React.KeyboardEvent
-    this.setState(() => { return { spacePressed: true, }; });
+    this.setState(() => ({ spacePressed: true}));
   }
 
   private onArrowUp = (event: React.KeyboardEvent) => {
@@ -260,8 +271,24 @@ class TextLine extends Component<IProps, IState> {
       this.context.selectNextLine(0);
     }
 
-    console.log(Cursor.getPosition(this.element));
     this.updateCursorPosition();
+  }
+
+  private onDelete = (event: React.KeyboardEvent) => {
+    const {text} = this.state;
+    const cursorPosition = Cursor.getPosition(this.element);
+
+    const beforeCursor = text.substring(0, cursorPosition);
+    const afterCursor = text.substring(cursorPosition);
+
+    if (beforeCursor === "") {
+      if (afterCursor === "") {
+        event.preventDefault();
+        this.context.deleteLine(Infinity);
+      }
+
+      this.setType("p");
+    }
   }
 
 
@@ -270,11 +297,12 @@ class TextLine extends Component<IProps, IState> {
    * Export the component data to the Notebook
    */
   private export(): void {
+    console.log("textline");
+
     this.context.exportLine(this.props.position, "txt", {
       subType: this.state.subType,
       html: this.state.html,
       text: this.state.text,
-      cursor: this.state.cursor,
     });
   }
 
@@ -293,8 +321,29 @@ class TextLine extends Component<IProps, IState> {
    * Called if the component mounts
    */
   public componentDidMount(): void {
-    // console.log("TextLine mounted");
+    this.selectionManager = new SelectionManager(this.element);
     this.ensureSelected();
+
+
+    // Handle default data
+    // ==================================================
+    let {defaultData} = this.props;
+    let html = defaultData?.html || this.state.html;
+    let subType = defaultData?.subType || this.state.subType;
+
+    // TODO: Add length, text for cursor handling
+
+    this.element.innerHTML = html;
+
+    if (defaultData?.selection) {
+      console.log("Moved selection");
+      this.selectionManager.setSelection(defaultData!.selection);
+    }
+
+    this.setState(() => ({html, subType}));
+    // ==================================================
+
+
     this.export();
   }
 
@@ -302,23 +351,23 @@ class TextLine extends Component<IProps, IState> {
    * Called if the components updates
    */
   public componentDidUpdate(prevProps: IProps, prevState: IState): void {
-    // console.log("TextLine updated");
     this.ensureSelected();
 
     if (this.props.selected) {
-      this.element.innerHTML = this.state.html;
+      // this.element.innerHTML = this.state.html;
 
       // Updated caret options
       if (prevProps.cursor !== this.props.cursor) {
-        let chars = Math.min(this.props.cursor, this.maxCursor);
-        Cursor.setPosition(this.element, chars);
+        // let chars = Math.min(this.props.cursor, this.maxCursor);
+        // Cursor.setPosition(this.element, chars);
       }
       else {
-        Cursor.setPosition(this.element, this.state.cursor!);
+        // Cursor.setPosition(this.element, this.state.cursor!);
       }
 
     }
     else {
+      // TODO: un-parse text
       this.element.innerHTML = this.parseText();
     }
 
@@ -329,6 +378,7 @@ class TextLine extends Component<IProps, IState> {
     }
 
 
+    // Change in subType
     if (this.props.defaultData?.subType &&
         this.props.defaultData?.subType !== this.state.subType &&
         this.props.defaultData?.subType !== prevProps.defaultData?.subType)
@@ -355,7 +405,6 @@ class TextLine extends Component<IProps, IState> {
       onKeyDown={this.onKeyDown}
       onKeyUp={this.onKeyUp}
       onMouseUp={this.onMouseUp}
-      onClick={this.onClick}
 
       onPaste={this.props.onPaste}
 

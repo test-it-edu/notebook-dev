@@ -151,7 +151,7 @@ class ImageLine extends Component<IProps, IState> {
    * Export the data of this component to the Notebook
    */
   private export(): void {
-    this.context.exportLine(this.props.position, "image", {
+    this.context.exportLine(this.props.position, "img", {
       url: this.state.url,
       alignment: this.state.alignment,
     });
@@ -163,6 +163,15 @@ class ImageLine extends Component<IProps, IState> {
    * Called if the component mounts
    */
   public componentDidMount(): void {
+    // Handle default data
+    // ==================================================
+    let {defaultData} = this.props;
+    let url = defaultData?.url || this.state.url;
+    let alignment = defaultData?.alignment || this.state.alignment;
+
+    this.setState(() => ({url, alignment}));
+    // ==================================================
+
     this.export();
   }
 
@@ -175,7 +184,9 @@ class ImageLine extends Component<IProps, IState> {
 
     // TODO: Equal state
     // Prevent infinite state loop
-    if (prevState.url !== this.state.url) {
+    if (!prevProps.defaultData ||
+        prevState.url !== this.state.url ||
+        prevState.alignment !== this.state.alignment) {
       this.export();
     }
   }
