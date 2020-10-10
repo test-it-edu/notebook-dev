@@ -22,7 +22,10 @@ class ContentEditableParser {
     parseCallback = parseCallback ?? ((v: any) => v);
 
     if (textParts.length !== contentParts.length) {
-      throw new Error("Unexpected behaviour: HTML Uses delimiter character!");
+      throw new Error(`
+        Unexpected behaviour: HTML Uses delimiter character. 
+        Text: -${this.text}-, HTML: -${this.content}-
+      `);
     }
 
     for (let i = 0; i < textParts.length; i++) {
