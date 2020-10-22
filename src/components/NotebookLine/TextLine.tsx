@@ -60,33 +60,24 @@ interface IState {
  */
 class TextLine extends Component<IProps, IState> {
   // Properties
-  //@ts-ignore
   public context: NotebookContextValue;
-  //@ts-ignore
   private selectionManager: SelectionManager;
   private ref = React.createRef<HTMLDivElement>();
   public state: IState = {
     subType: "p",
     html: "",
-  }
+  };
 
   // Static properties
+  public static readonly TYPE = "txt";
   public static contextType = NotebookContext;
   public static defaultProps = {};
 
   // Getters
-  private get element(): HTMLDivElement {
-    return this.ref.current!;
-  }
-  private get text(): string {
-    return this.element.innerText;
-  }
-  private get html(): string {
-    return this.element.innerHTML;
-  }
-  private get maxCursor(): number {
-    return this.text.length;
-  }
+  private get element(): HTMLDivElement { return this.ref.current! };
+  private get text(): string { return this.element.innerText; }
+  private get html(): string { return this.element.innerHTML; }
+  private get maxCursor(): number { return this.text.length; }
 
 
   // Methods
@@ -96,19 +87,10 @@ class TextLine extends Component<IProps, IState> {
     return tempContainer.innerText || "";
   }
 
-  private updateCursorPosition = () => {
-    // const caretPosition = Cursor.getPosition(this.element);
-    //
-    // this.setState(() => ({ cursor: caretPosition }));
-  }
 
   // Event Handlers
   // OnMouseUp Handlers
   private onMouseUp = () => {
-    // TODO: Cursor?
-    this.updateCursorPosition();
-
-
     this.onSelect();
   }
 
@@ -194,12 +176,6 @@ class TextLine extends Component<IProps, IState> {
   }
 
 
-
-  // KeyUp Handlers
-  private onKeyUp = () => {
-    this.updateCursorPosition();
-  }
-
   // KeyDown Handlers
   private onKeyDown = (event: React.KeyboardEvent) => {
     let keyManager = new KeyManager(event);
@@ -252,8 +228,6 @@ class TextLine extends Component<IProps, IState> {
       event.preventDefault();
       this.context.selectPrevLine(Infinity);
     }
-
-    this.updateCursorPosition();
   }
 
   private onArrowRight = (event: React.KeyboardEvent) => {
@@ -261,8 +235,6 @@ class TextLine extends Component<IProps, IState> {
       event.preventDefault();
       this.context.selectNextLine(0);
     }
-
-    this.updateCursorPosition();
   }
 
   private onDelete = (event: React.KeyboardEvent) => {
@@ -289,9 +261,7 @@ class TextLine extends Component<IProps, IState> {
    * Export the component data to the Notebook
    */
   private export(): void {
-    console.log("textline");
-
-    this.context.exportLine(this.props.position, "txt", {
+    this.context.exportLine(this.props.position, TextLine.TYPE, {
       subType: this.state.subType,
       html: this.state.html,
     });
@@ -321,8 +291,6 @@ class TextLine extends Component<IProps, IState> {
     let {defaultData} = this.props;
     let html = defaultData?.html || this.state.html;
     let subType = defaultData?.subType || this.state.subType;
-
-    // TODO: Add length, text for cursor handling
 
     this.element.innerHTML = html;
 
@@ -390,7 +358,6 @@ class TextLine extends Component<IProps, IState> {
 
       onInput={this.onChange}
       onKeyDown={this.onKeyDown}
-      onKeyUp={this.onKeyUp}
       onMouseUp={this.onMouseUp}
 
       onPaste={this.props.onPaste}
