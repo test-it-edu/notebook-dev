@@ -1,30 +1,47 @@
-import React, {useRef} from 'react';
-import "./css/style.css";
+import React, {createRef, Component} from 'react';
 import notebookJSON from "./data/notebook.json";
-
 import Notebook from "./components/Notebook/Notebook";
+import "./css/style.css";
 
 
-function App () {
-  const notebookRef = useRef<any>();
+/**
+ * App Component
+ * Entry point of the application
+ * @author Ingo Andelhofs
+ */
+class App extends Component<{}, {}> {
 
-  const onExportToConsole = () => {
-    let exportData = notebookRef!.current!.export();
-    console.log(JSON.stringify(exportData, null, 2));
+  // Members
+  private notebookRef = createRef<Notebook>();
+
+
+  // Listeners
+  private onExportToConsole = () => {
+    const notebookElement = this.notebookRef.current!;
+    const exportData = notebookElement.export();
+    const dataAsString = JSON.stringify(exportData, null, 2);
+
+    console.log(dataAsString);
   }
 
-  const onLoadNotebook = () => {
-    notebookRef.current!.load(notebookJSON);
+  private onLoadNotebook = () => {
+    const notebookElement = this.notebookRef.current!;
+    notebookElement.load(notebookJSON);
   }
 
-  return <section>
-    <section className="notebook-option-bar">
-      <button onClick={onExportToConsole}>Export to console</button>
-      <button onClick={onLoadNotebook}>Load notebook.json</button>
-    </section>
 
-    <Notebook ref={notebookRef}/>
-  </section>;
+  // Rendering
+  public render() {
+
+    return <section>
+      <section className="notebook-option-bar">
+        <button onClick={this.onExportToConsole}>Export to console</button>
+        <button onClick={this.onLoadNotebook}>Load notebook.json</button>
+      </section>
+
+      <Notebook ref={this.notebookRef}/>
+    </section>;
+  }
 }
 
 export default App;

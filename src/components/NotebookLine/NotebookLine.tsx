@@ -8,7 +8,7 @@ import {NotebookContext} from "../Notebook/NotebookContext";
 
 
 /**
- * map StringRenderMap
+ * String Render Map
  * @author Ingo Andelhofs
  */
 export const StringRenderMap = {
@@ -19,45 +19,46 @@ export const StringRenderMap = {
 
 
 /**
- * interface IProps
+ * Props Interface
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any>  {
-  defaultType: string,
-  defaultData: any,
+interface Props extends React.HTMLAttributes<HTMLElement>  {
+  defaultType: string;
+  defaultData: any;
 
-  selected: boolean,
-  position: number,
-  first?: boolean,
-  last?: boolean,
-  cursor: number,
+  selected: boolean;
+  position: number;
+  first?: boolean;
+  last?: boolean;
+  cursor: number;
 }
 
 
 /**
- * interface IState
+ * State Interface
  * @author Ingo Andelhofs
  */
-interface IState {
-  type: string,
-  data: any,
-  props: any,
+interface State {
+  type: string;
+  data: any;
+  props: any;
 
-  dropdownActive: boolean,
+  dropdownActive: boolean;
 }
 
 
 
 /**
- * class NotebookLine
+ * NotebookLine Component
  * A line of the Notebook, this component handles switching to other Line types.
+ *
  * @author Ingo Andelhofs
- * @todo: Unmount unsubscribe event listeners
  */
-class NotebookLine extends Component<IProps, IState> {
+class NotebookLine extends Component<Props, State> {
+
   // Properties
   public buttonRef = React.createRef<any>();
-  public state: IState = {
+  public state: State = {
     type: "txt",
     data: {
       subType: "p",
@@ -70,7 +71,7 @@ class NotebookLine extends Component<IProps, IState> {
 
   // Static properties
   public static contextType = NotebookContext;
-  public static defaultProps: IProps | any = {
+  public static defaultProps: Props | any = {
     defaultType: "txt",
     defaultData: {
       subType: "p",
@@ -156,7 +157,7 @@ class NotebookLine extends Component<IProps, IState> {
    * @param prevProps The previous props
    * @param prevState The previous state
    */
-  public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {}
+  public componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {}
 
 
   // Render methods

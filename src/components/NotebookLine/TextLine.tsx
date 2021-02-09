@@ -10,60 +10,65 @@ import SelectionManager from "../../utils/Selection/SelectionManager";
 
 
 
-// Types
+/**
+ * Types
+ * @author Ingo Andelhofs
+ */
 type TextLineSubType = "p" | "h1" | "h2" | "h3" | string;
 type HTMLString = string;
 type Selection = [number, number];
+type DefaultData = {
+  subType: TextLineSubType;
+  html: HTMLString;
+  selection: Selection;
+}
 
 
 
 /**
- * interface IProps
+ * Props Interface
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any> {
+interface Props extends React.HTMLAttributes<HTMLElement> {
   // Data
-  defaultData?: {
-    subType: TextLineSubType,
-    html: HTMLString,
-    selection: Selection,
-  },
+  defaultData?: DefaultData;
 
   // Notebook
-  selected: boolean,
-  position: number,
-  cursor: any,
+  selected: boolean;
+  position: number;
+  cursor: any;
 
   // NotebookLine
-  onLineTypeChange: (type: string) => void,
-  onPaste: (event: React.ClipboardEvent) => void,
+  onLineTypeChange: (type: string) => void;
+  onPaste: (event: React.ClipboardEvent) => void;
 }
 
 
 /**
- * interface IState
+ * State Interface
  * @author Ingo Andelhofs
  */
-interface IState {
-  subType: TextLineSubType,
-  html: HTMLString,
+interface State {
+  subType: TextLineSubType;
+  html: HTMLString;
 }
 
 
 
 /**
- * class TextLine
+ * TextLine Component
  * @author Ingo Andelhofs
  *
- * @TODO (BUG): Handle cursor on selection (onClick componentDidMount is called)
- * @TODO: Handle Del button and Enter (in the middle of text)
+ * @todo (BUG): Handle cursor on selection (onClick componentDidMount is called)
+ * @todo: Handle Del button and Enter (in the middle of text)
  */
-class TextLine extends Component<IProps, IState> {
+class TextLine extends Component<Props, State> {
+
   // Properties
   public context: NotebookContextValue;
   private selectionManager: SelectionManager;
   private ref = React.createRef<HTMLDivElement>();
-  public state: IState = {
+  public state: State = {
     subType: "p",
     html: "",
   };
@@ -309,7 +314,7 @@ class TextLine extends Component<IProps, IState> {
   /**
    * Called if the components updates
    */
-  public componentDidUpdate(prevProps: IProps, prevState: IState): void {
+  public componentDidUpdate(prevProps: Props, prevState: State): void {
     this.ensureSelected();
 
     if (this.props.selected) {

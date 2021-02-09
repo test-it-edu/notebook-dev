@@ -1,37 +1,36 @@
 import React, {Component, ReactNode} from 'react';
 
 
-
 /**
- * interface IProps
+ * Props Interface
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any> {
-  defaultHTML: string,
-  defaultCursor: number,
-  disableEditing: boolean,
-  focus: boolean,
-
-  innerRef: React.RefObject<HTMLDivElement>,
+interface Props extends React.HTMLAttributes<HTMLElement> {
+  defaultHTML: string;
+  defaultCursor: number;
+  disableEditing: boolean;
+  focus: boolean;
+  innerRef: React.RefObject<HTMLDivElement>;
 }
 
 
 /**
- * interface IState
+ * State Interface
  * @author Ingo Andelhofs
  */
-interface IState {
-  html: string,
-  cursor: number,
-  selection: {},
-  length: number,
+interface State {
+  html: string;
+  cursor: number;
+  selection: {};
+  length: number;
 }
 
 
 
 /**
- * class ContentEditable
+ * ContentEditable Component
  * @todo: Clean up and finalize
+ * @deprecated This component will not be used, because there are easier ways to get the same effect.
  * @author Ingo Andelhofs
  *
  * Example:
@@ -41,9 +40,10 @@ interface IState {
  *   defaultHTML={"Hello"}
  *   defaultCursor={2} />
  */
-class ContentEditable extends Component<IProps, IState> {
+class ContentEditable extends Component<Props, State> {
+
   // Properties
-  public state: IState = {
+  public state: State = {
     html: "",
     cursor: 0,
     selection: {},
@@ -51,7 +51,7 @@ class ContentEditable extends Component<IProps, IState> {
   }
 
   // Static properties
-  public static defaultProps: IProps = {
+  public static defaultProps: Props = {
     defaultHTML: "",
     defaultCursor: 0,
     disableEditing: false,
@@ -125,7 +125,7 @@ class ContentEditable extends Component<IProps, IState> {
    * @param prevProps The previous properties
    * @param prevState The previous state
    */
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: Props, prevState: State) {
     this.ensureFocused();
 
     if (prevProps.defaultHTML !== this.props.defaultHTML) {

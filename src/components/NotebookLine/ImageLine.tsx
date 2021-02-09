@@ -5,49 +5,58 @@ import {NotebookContext} from "../Notebook/NotebookContext";
 import clsx from "clsx";
 
 
-
 /**
- * interface IProps
+ * Types
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any>  {
-  defaultData?: {
-    url: string,
-    alignment: "left" | "right" | "center",
-  },
+type ImageAlignment = "left" | "right" | "center";
+
+type DefaultData = {
+  url: string;
+  alignment: ImageAlignment;
+};
+
+
+/**
+ * Props Interface
+ * @author Ingo Andelhofs
+ */
+interface Props extends React.HTMLAttributes<HTMLElement>  {
+  defaultData?: DefaultData;
 
   // Notebook
-  selected: boolean,
-  position: number,
+  selected: boolean;
+  position: number;
 
   // NotebookLine
-  onLineTypeChange: (type: string) => void,
-  onPaste: (pasteData: any) => void,
+  onLineTypeChange: (type: string) => void;
+  onPaste: (pasteData: any) => void;
 }
 
 
 /**
- * interface IState
+ * State Interface
  * @author Ingo Andelhofs
  */
-export interface IState {
-  url: string,
-  alignment: "left" | "right" | "center",
+export interface State {
+  url: string;
+  alignment: ImageAlignment;
 }
 
 
 
 /**
- * class ImageLine
+ * ImageLine Component
  * @author Ingo Andelhofs
  *
- * @TODO: Image must be pasted on a new line otherwise the line content is lost
+ * @todo: Image must be pasted on a new line otherwise the line content is lost
  */
-class ImageLine extends Component<IProps, IState> {
+class ImageLine extends Component<Props, State> {
+
   // Properties
   public ref = React.createRef<HTMLDivElement>();
   public fileInputRef = React.createRef<HTMLInputElement>();
-  public state: IState = {
+  public state: State = {
     url: "",
     alignment: "left"
   }
@@ -57,9 +66,6 @@ class ImageLine extends Component<IProps, IState> {
   public static defaultProps = {};
 
   // Getters
-  private get element(): HTMLDivElement {
-    return this.ref.current!;
-  }
   private get fileInputElement(): HTMLInputElement {
     return this.fileInputRef.current!;
   }
@@ -78,7 +84,7 @@ class ImageLine extends Component<IProps, IState> {
    * @param event
    */
   private onKeyDown = (event: React.KeyboardEvent): void => {
-    let keyManager = new KeyManager(event);
+    const keyManager = new KeyManager(event);
     keyManager.on({
       "ArrowUp": (event: React.KeyboardEvent) => {
         event.preventDefault();
@@ -135,9 +141,9 @@ class ImageLine extends Component<IProps, IState> {
 
     // TODO: Handle (no files, incorrect files, ...)
 
-    let file = target.files![0] as any;
+    const file = target.files![0] as any;
     file?.arrayBuffer().then((ab: any) => {
-      let base64 = btoa(String.fromCharCode(...new Uint8Array(ab)));
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(ab)));
 
       this.setState(() => ({
         url: "data:image/png;base64," + base64,
@@ -180,7 +186,7 @@ class ImageLine extends Component<IProps, IState> {
    * @param prevProps The previous props
    * @param prevState The previous state
    */
-  public componentDidUpdate(prevProps: IProps, prevState: IState): void {
+  public componentDidUpdate(prevProps: Props, prevState: State): void {
 
     // TODO: Equal state
     // Prevent infinite state loop
@@ -220,7 +226,7 @@ class ImageLine extends Component<IProps, IState> {
    * Render the component
    */
   public render(): ReactNode {
-    let classNames = clsx({
+    const classNames = clsx({
       "image-line": true,
       "--selected": this.props.selected,
       "--not-selected": !this.props.selected

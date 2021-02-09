@@ -1,25 +1,32 @@
 import React, {Component, ReactNode} from 'react';
 
 
-
 /**
- * interface IProps
+ * Props Interface
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any> {
-  innerRef: React.RefObject<HTMLDivElement>,
-  focus: boolean,
+interface Props extends React.HTMLAttributes<HTMLElement> {
+  innerRef: React.RefObject<HTMLDivElement>;
+  focus: boolean;
 }
 
 
-
 /**
- * class Focusable
+ * State Interface
  * @author Ingo Andelhofs
  */
-class Focusable extends Component<IProps, any> {
+interface State {}
+
+
+
+/**
+ * Focusable Component
+ * @author Ingo Andelhofs
+ */
+class Focusable extends Component<Props, State> {
+
   // Properties
-  public static defaultProps: IProps = {
+  public static defaultProps: Props = {
     innerRef: React.createRef<HTMLDivElement>(),
     focus: false,
   }
@@ -51,7 +58,7 @@ class Focusable extends Component<IProps, any> {
    * Called if the component mounts
    * @param prevProps The previous props
    */
-  public componentDidUpdate(prevProps: Readonly<IProps>): void {
+  public componentDidUpdate(prevProps: Readonly<Props>): void {
     this.ensureFocus();
   }
 

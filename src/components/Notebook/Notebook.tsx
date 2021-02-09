@@ -5,24 +5,24 @@ import {NotebookProvider} from "./NotebookContext";
 
 
 /**
- * interface IProps
+ * interface Props
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<any> {}
+interface Props extends React.HTMLAttributes<HTMLElement> {}
 
 
 
 /**
- * interface IState
+ * interface State
  * @author Ingo Andelhofs
  */
-interface IState {
-  notebookLines: any[],
-  currentSelection: number,
-  lineIdCounter: number,
+interface State {
+  notebookLines: any[];
+  currentSelection: number;
+  lineIdCounter: number;
 
-  cursor: number,
-  selection: [number, number],
+  cursor: number;
+  selection: [number, number];
 }
 
 
@@ -46,11 +46,11 @@ const defaultLines = [
 
 
 /**
- * class Notebook
+ * Notebook Component
  * @author Ingo Andelhofs
  */
-class Notebook extends Component<IProps, IState> {
-  public state: IState = {
+class Notebook extends Component<Props, State> {
+  public state: State = {
     notebookLines: defaultLines,
     lineIdCounter: defaultId,
     currentSelection: 0,
@@ -74,7 +74,7 @@ class Notebook extends Component<IProps, IState> {
   public insertNewLine = (): void => {
     const index = this.state.currentSelection;
 
-    this.setState((prevState: IState) => {
+    this.setState((prevState: State) => {
       const lines = [
         ...prevState.notebookLines.slice(0, index + 1),
         {id: prevState.lineIdCounter},
@@ -93,7 +93,7 @@ class Notebook extends Component<IProps, IState> {
     if (this.isLastElement(this.state.currentSelection))
       return;
 
-    this.setState((prevState: IState) => {
+    this.setState((prevState: State) => {
       return {
         currentSelection: prevState.currentSelection + 1,
         cursor: cursor,
@@ -105,7 +105,7 @@ class Notebook extends Component<IProps, IState> {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
-    this.setState((prevState: IState) => {
+    this.setState((prevState: State) => {
       return {
         currentSelection: prevState.currentSelection - 1,
         cursor: cursor,
@@ -125,7 +125,7 @@ class Notebook extends Component<IProps, IState> {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
-    this.setState((prevState: IState) => {
+    this.setState((prevState: State) => {
       const lines = prevState.notebookLines.filter((element, index: number) => {
         return index !== prevState.currentSelection;
       });
@@ -168,7 +168,7 @@ class Notebook extends Component<IProps, IState> {
   public load(lines: any[]): void {
     let currentId = this.state.lineIdCounter;
 
-    lines = lines.map((element: any, index: number) => {
+    lines = lines.map((element: any) => {
       element.id = currentId++;
       return element;
     });
@@ -226,4 +226,6 @@ class Notebook extends Component<IProps, IState> {
   }
 }
 
+
+// export type NotebookProps = Props;
 export default Notebook;

@@ -5,46 +5,55 @@ import {NotebookContext} from "../Notebook/NotebookContext";
 import clsx from "clsx";
 
 
-
 /**
- * interface IProps
+ * Types
  * @author Ingo Andelhofs
  */
-interface IProps extends React.HTMLAttributes<HTMLElement> {
-  defaultData: {
-    subType: "lines" | "grid",
-    amountOfLines: number,
-  },
+type LineTypes = "lines" | "grid";
+
+type DefaultData = {
+  subType: LineTypes;
+  amountOfLines: number;
+};
+
+
+/**
+ * Props Interface
+ * @author Ingo Andelhofs
+ */
+interface Props extends React.HTMLAttributes<HTMLElement> {
+  defaultData: DefaultData;
 
   // Notebook
-  selected: boolean,
-  position: number,
+  selected: boolean;
+  position: number;
 
   // NotebookLine
-  onLineTypeChange: (type: string) => void,
-  onPaste: (pasteData: any) => void,
+  onLineTypeChange: (type: string) => void;
+  onPaste: (pasteData: any) => void;
 }
 
 
 /**
- * interface IState
+ * State Interface
  * @author Ingo Andelhofs
  */
-interface IState {
-  subType: "lines" | "grid",
-  amountOfLines: number | string,
+interface State {
+  subType: LineTypes;
+  amountOfLines: number | string;
 }
 
 
 
 /**
- * class LinesLine
+ * LinesLine Component
  * @author Ingo Andelhofs
  */
-class LinesLine extends Component<IProps, IState> {
+class LinesLine extends Component<Props, State> {
+
   // Properties
   private ref = React.createRef<HTMLDivElement>();
-  public state: IState = {
+  public state: State = {
     subType: "lines",
     amountOfLines: 3,
   }
@@ -222,7 +231,7 @@ class LinesLine extends Component<IProps, IState> {
    * Render the component
    */
   public render(): ReactNode {
-    let classNames = clsx({
+    const classNames = clsx({
       "lines-line": true,
       "--selected": this.props.selected,
       "--not-selected": !this.props.selected

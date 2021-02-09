@@ -2,18 +2,18 @@ import React from "react";
 
 
 export type NotebookContextValue = {
-  selectLine: (position: number) => void,
-  selectNextLine: (cursor: number) => void,
-  selectPrevLine: (cursor: number) => void,
-  createLine: () => void,
-  deleteLine: (cursor: number) => void,
-  exportLine: (position: number, type: string, data: any) => void,
+  selectLine: (position: number) => void;
+  selectNextLine: (cursor: number) => void;
+  selectPrevLine: (cursor: number) => void;
+  createLine: () => void;
+  deleteLine: (cursor: number) => void;
+  exportLine: (position: number, type: string, data: any) => void;
 };
 
 
 
 /**
- * context NotebookContext
+ * Notebook Context
  * @author Ingo Andelhofs
  */
 export const NotebookContext = React.createContext<NotebookContextValue | {}>({});
