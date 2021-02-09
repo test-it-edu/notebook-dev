@@ -1,4 +1,4 @@
-# Notebook | TestIt Edu
+# Notebook
 Ingo Andelhofs  
 Student at Hasselt University
 
