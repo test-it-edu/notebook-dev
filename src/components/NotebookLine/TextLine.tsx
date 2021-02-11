@@ -197,6 +197,8 @@ class TextLine extends Component<Props, State> {
   }
 
   private onEnter = (event: React.KeyboardEvent) => {
+    // todo: #17
+
     event.preventDefault();
     this.context.createLine();
   }
@@ -228,14 +230,19 @@ class TextLine extends Component<Props, State> {
     }
   }
 
+  private onDelete = (event: React.KeyboardEvent) => {
+    // todo: 18
+  }
+
+
   private onArrowUp = (event: React.KeyboardEvent) => {
     event.preventDefault();
-    this.context.selectPrevLine(Cursor.getPosition(this.element));
+    this.context.selectPrevLine(Cursor.getPosition(this.element) + 1);
   }
 
   private onArrowDown = (event: React.KeyboardEvent) => {
     event.preventDefault();
-    this.context.selectNextLine(Cursor.getPosition(this.element));
+    this.context.selectNextLine(Cursor.getPosition(this.element) + 1);
   }
 
   private onArrowLeft = (event: React.KeyboardEvent) => {
@@ -250,24 +257,6 @@ class TextLine extends Component<Props, State> {
       event.preventDefault();
       this.context.selectNextLine(0);
     }
-  }
-
-  private onDelete = (event: React.KeyboardEvent) => {
-    // todo: Handle onDelete()
-    // const text = this.text;
-    // const cursorPosition = Cursor.getPosition(this.element);
-    //
-    // const beforeCursor = text.substring(0, cursorPosition);
-    // const afterCursor = text.substring(cursorPosition);
-    //
-    // if (beforeCursor === "") {
-    //   if (afterCursor === "") {
-    //     event.preventDefault();
-    //     this.context.deleteLine(Infinity);
-    //   }
-    //
-    //   this.setType("p");
-    // }
   }
 
 
@@ -325,9 +314,13 @@ class TextLine extends Component<Props, State> {
       // Un-parse text
       if (prevProps.selected !== this.props.selected) {
         this.element.innerHTML = this.state.html;
-      }
 
-      // todo: Update selections
+        // todo: Sometimes the cursor jumps unwillingly...
+        // todo: If we click this field also gets selected, and the cursor jumps deselecting the focus.
+        const cursor = this.props.cursor;
+        this.selectionManager.setCaret(cursor);
+        // console.log(cursor);
+      }
     }
     else {
       if (prevProps.selected !== this.props.selected) {

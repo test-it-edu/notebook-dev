@@ -122,12 +122,10 @@ class Notebook extends Component<Props, State> {
     if (this.isFirstElement(this.state.currentSelection))
       return;
 
-    this.setState((prevState: State) => {
-      return {
-        currentSelection: prevState.currentSelection - 1,
-        cursor: cursor,
-      };
-    });
+    this.setState((prevState: State) => ({
+      currentSelection: prevState.currentSelection - 1,
+      cursor: cursor,
+    }));
   }
 
   public selectLine = (position: number): void => {
