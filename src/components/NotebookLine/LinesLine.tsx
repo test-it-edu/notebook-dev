@@ -1,7 +1,6 @@
 import React, {Component, ReactNode} from 'react';
 import Focusable from "../Focusable/Focusable";
-import KeyManager from "../../utils/KeyManager";
-import {NotebookContext} from "../Notebook/NotebookContext";
+import {NotebookContext, NotebookContextValue} from "../Notebook/NotebookContext";
 import clsx from "clsx";
 
 
@@ -10,7 +9,6 @@ import clsx from "clsx";
  * @author Ingo Andelhofs
  */
 type LineTypes = "lines" | "grid";
-
 type DefaultData = {
   subType: LineTypes;
   amountOfLines: number;
@@ -51,16 +49,21 @@ interface State {
  */
 class LinesLine extends Component<Props, State> {
 
-  // Properties
+  // Refs
   private ref = React.createRef<HTMLDivElement>();
+
+  // Context
+  public static contextType = NotebookContext;
+  public context: NotebookContextValue;
+
+  // State
   public state: State = {
     subType: "lines",
     amountOfLines: 3,
   }
 
-  // Static properties
-  public static contextType = NotebookContext;
-  public static defaultProps = {
+  // Props
+  public static defaultProps: Partial<Props> = {
     defaultData: {
       subType: "lines",
       amountOfLines: 3,
@@ -88,34 +91,7 @@ class LinesLine extends Component<Props, State> {
    * @param event The KeyboardEvent
    */
   private onKeyDown = (event: React.KeyboardEvent): void => {
-    let keyManager = new KeyManager(event);
-    keyManager.on({
-      "ArrowUp": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectPrevLine(Infinity)
-      },
-      "ArrowDown": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectNextLine(Infinity)
-      },
-      "ArrowLeft": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectPrevLine(Infinity)
-      },
-      "ArrowRight": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectNextLine(0)
-      },
-
-      "Enter": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.createLine();
-      },
-      "Backspace": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.deleteLine(Infinity)
-      },
-    });
+    this.context.defaultKeyDown(event);
   }
 
   /**
@@ -243,7 +219,6 @@ class LinesLine extends Component<Props, State> {
       children={this.renderContainer()}
 
       focus={this.props.selected}
-
       onClick={this.onClick}
       onKeyDown={this.onKeyDown}
     />;

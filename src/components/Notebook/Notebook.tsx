@@ -1,19 +1,20 @@
 import React, {Component, ReactNode} from 'react';
-import NotebookLine from "../NotebookLine/NotebookLine";
-import {NotebookProvider} from "./NotebookContext";
+import {NotebookContextValue, NotebookProvider} from "./NotebookContext";
+import KeyManager from "../../utils/KeyManager";
+import {notebookConfig} from "../../config/config";
+import NotebookLine from "../NotebookLine/base/NotebookLine";
 
 
 
 /**
- * interface Props
+ * Props Interface
  * @author Ingo Andelhofs
  */
 interface Props extends React.HTMLAttributes<HTMLElement> {}
 
 
-
 /**
- * interface State
+ * State Interface
  * @author Ingo Andelhofs
  */
 interface State {
@@ -28,31 +29,15 @@ interface State {
 
 
 /**
- * Data default Lines
- */
-const defaultId = 1;
-const defaultLines = [
-  {
-    id: 0,
-    data: {
-      subType: "h1",
-      html: "Hallo",
-      selection: [1, 1],
-    },
-    type: "txt"
-  }
-];
-
-
-
-/**
  * Notebook Component
  * @author Ingo Andelhofs
  */
 class Notebook extends Component<Props, State> {
+
+  // State
   public state: State = {
-    notebookLines: defaultLines,
-    lineIdCounter: defaultId,
+    notebookLines: notebookConfig.defaultLines,
+    lineIdCounter: notebookConfig.defaultID,
     currentSelection: 0,
 
     cursor: 0,
@@ -71,6 +56,38 @@ class Notebook extends Component<Props, State> {
 
 
   // NotebookProvider Methods
+  private defaultKeyDown = (event: React.KeyboardEvent) => {
+    const keyManager = new KeyManager(event);
+
+    keyManager.on({
+      "ArrowUp": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.selectPreviousLine(Infinity)
+      },
+      "ArrowDown": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.selectNextLine(Infinity)
+      },
+      "ArrowLeft": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.selectPreviousLine(Infinity)
+      },
+      "ArrowRight": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.selectNextLine(0)
+      },
+
+      "Enter": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.insertNewLine();
+      },
+      "Backspace": (event: React.KeyboardEvent) => {
+        event.preventDefault();
+        this.deleteLine(Infinity);
+      },
+    });
+  }
+
   public insertNewLine = (): void => {
     const index = this.state.currentSelection;
 
@@ -141,7 +158,7 @@ class Notebook extends Component<Props, State> {
   }
 
 
-  // Export Methods
+  // Exporting
   public exportLine = (position: number, type: string, data: any): void => {
     let updatedLines = this.state.notebookLines.map((element: any, index: number) => {
       if (index === position) {
@@ -164,7 +181,7 @@ class Notebook extends Component<Props, State> {
   }
 
 
-  // Load Method
+  // Loading
   public load(lines: any[]): void {
     let currentId = this.state.lineIdCounter;
 
@@ -180,12 +197,26 @@ class Notebook extends Component<Props, State> {
   }
 
 
+  // Other Methods
+  private initContext(): NotebookContextValue {
 
-  // Render Methods
-  /**
-   * Render the all the Lines
-   */
+    return {
+      selectLine: this.selectLine,
+      selectNextLine: this.selectNextLine,
+      selectPrevLine: this.selectPreviousLine,
+      createLine: this.insertNewLine,
+      deleteLine: this.deleteLine,
+      exportLine: this.exportLine,
+
+      defaultKeyDown: this.defaultKeyDown,
+    };
+  }
+
+
+  // Rendering
   private renderNotebookLines(): ReactNode[] {
+    // Render all the lines in of the Notebook
+
     const {cursor, currentSelection} = this.state;
 
     return this.state.notebookLines.map((element: any, index: number) => {
@@ -205,21 +236,12 @@ class Notebook extends Component<Props, State> {
       });
   }
 
-  /**
-   * Render the component
-   */
   public render(): ReactNode {
-    return <div className={"notebook"}>
-      <NotebookProvider
-        value={{
-          selectLine: this.selectLine,
-          selectNextLine: this.selectNextLine,
-          selectPrevLine: this.selectPreviousLine,
-          createLine: this.insertNewLine,
-          deleteLine: this.deleteLine,
+    // Render the notebook lines inside of a provider.
 
-          exportLine: this.exportLine,
-        }}
+    return <div className="notebook">
+      <NotebookProvider
+        value={this.initContext()}
         children={this.renderNotebookLines()}
       />
     </div>

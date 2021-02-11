@@ -1,9 +1,9 @@
 import React, {Component, ReactNode} from 'react';
-import ClipboardManager from "../../utils/ClipboardManager";
-import ImageLine from "./ImageLine";
-import LinesLine from "./LinesLine";
-import TextLine from "./TextLine";
-import {NotebookContext} from "../Notebook/NotebookContext";
+import ClipboardManager from "../../../utils/ClipboardManager";
+import ImageLine from "../ImageLine";
+import LinesLine from "../LinesLine";
+import TextLine from "../TextLine";
+import {NotebookContext} from "../../Notebook/NotebookContext";
 
 
 

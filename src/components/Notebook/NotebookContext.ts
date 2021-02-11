@@ -1,4 +1,4 @@
-import React from "react";
+import React, {Context} from "react";
 
 
 export type NotebookContextValue = {
@@ -8,8 +8,9 @@ export type NotebookContextValue = {
   createLine: () => void;
   deleteLine: (cursor: number) => void;
   exportLine: (position: number, type: string, data: any) => void;
-};
 
+  defaultKeyDown: (event: React.KeyboardEvent) => void;
+};
 
 
 /**
@@ -18,3 +19,5 @@ export type NotebookContextValue = {
  */
 export const NotebookContext = React.createContext<NotebookContextValue | {}>({});
 export const NotebookProvider = NotebookContext.Provider;
+
+export type NotebookContextType = Context<NotebookContextValue | {}>;

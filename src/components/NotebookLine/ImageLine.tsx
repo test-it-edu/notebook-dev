@@ -1,8 +1,8 @@
 import React, {Component, ReactNode} from 'react';
-import KeyManager from "../../utils/KeyManager";
 import Focusable from "../Focusable/Focusable";
-import {NotebookContext} from "../Notebook/NotebookContext";
+import {NotebookContext, NotebookContextValue} from "../Notebook/NotebookContext";
 import clsx from "clsx";
+import {NotebookLineInstance} from "./base/NotebookLineInstance";
 
 
 /**
@@ -10,7 +10,6 @@ import clsx from "clsx";
  * @author Ingo Andelhofs
  */
 type ImageAlignment = "left" | "right" | "center";
-
 type DefaultData = {
   url: string;
   alignment: ImageAlignment;
@@ -21,7 +20,7 @@ type DefaultData = {
  * Props Interface
  * @author Ingo Andelhofs
  */
-interface Props extends React.HTMLAttributes<HTMLElement>  {
+interface Props extends React.HTMLAttributes<HTMLElement> {
   defaultData?: DefaultData;
 
   // Notebook
@@ -44,26 +43,31 @@ export interface State {
 }
 
 
-
 /**
  * ImageLine Component
- * @author Ingo Andelhofs
  *
+ * @author Ingo Andelhofs
  * @todo: Image must be pasted on a new line otherwise the line content is lost
  */
-class ImageLine extends Component<Props, State> {
+class ImageLine extends Component<Props, State> implements NotebookLineInstance {
 
-  // Properties
+  // Refs
   public ref = React.createRef<HTMLDivElement>();
   public fileInputRef = React.createRef<HTMLInputElement>();
+
+  // Context
+  public static contextType = NotebookContext;
+  public context: NotebookContextValue;
+
+  // State
   public state: State = {
     url: "",
     alignment: "left"
   }
 
-  // Static properties
-  public static contextType = NotebookContext;
-  public static defaultProps = {};
+  // Props
+  public static defaultProps: Partial<Props> = {};
+
 
   // Getters
   private get fileInputElement(): HTMLInputElement {
@@ -81,37 +85,10 @@ class ImageLine extends Component<Props, State> {
 
   /**
    * Handles the KeyDown event
-   * @param event
+   * @param event The keyboard event
    */
   private onKeyDown = (event: React.KeyboardEvent): void => {
-    const keyManager = new KeyManager(event);
-    keyManager.on({
-      "ArrowUp": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectPrevLine(Infinity)
-      },
-      "ArrowDown": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectNextLine(Infinity)
-      },
-      "ArrowLeft": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectPrevLine(Infinity)
-      },
-      "ArrowRight": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.selectNextLine(0)
-      },
-
-      "Enter": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.createLine();
-      },
-      "Backspace": (event: React.KeyboardEvent) => {
-        event.preventDefault();
-        this.context.deleteLine(Infinity)
-      },
-    });
+    this.context.defaultKeyDown(event);
   }
 
   /**
@@ -156,7 +133,7 @@ class ImageLine extends Component<Props, State> {
   /**
    * Export the data of this component to the Notebook
    */
-  private export(): void {
+  public export(): void {
     this.context.exportLine(this.props.position, "img", {
       url: this.state.url,
       alignment: this.state.alignment,
@@ -191,8 +168,8 @@ class ImageLine extends Component<Props, State> {
     // TODO: Equal state
     // Prevent infinite state loop
     if (!prevProps.defaultData ||
-        prevState.url !== this.state.url ||
-        prevState.alignment !== this.state.alignment) {
+      prevState.url !== this.state.url ||
+      prevState.alignment !== this.state.alignment) {
       this.export();
     }
   }
@@ -217,7 +194,7 @@ class ImageLine extends Component<Props, State> {
       </div>
 
       <div className="image-wrapper" style={{textAlign: this.state.alignment}}>
-        <img src={url} alt="Placeholder"  />
+        <img src={url} alt="Placeholder"/>
       </div>
     </div>;
   }

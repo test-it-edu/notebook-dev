@@ -3,7 +3,7 @@ import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathParser from "../../utils/MathParser";
 import KeyManager from "../../utils/KeyManager";
 import {NotebookContext, NotebookContextValue} from "../Notebook/NotebookContext";
-import {StringRenderMap} from "./NotebookLine";
+import {StringRenderMap} from "./base/NotebookLine";
 
 import Cursor from "../../utils/Cursor";
 import SelectionManager from "../../utils/Selection/SelectionManager";
@@ -348,11 +348,10 @@ class TextLine extends Component<Props, State> {
   }
 
 
-  // Render methods
-  /**
-   * Render the component
-   */
+  // Rendering
   public render(): ReactNode {
+    // Renders the TextLine Component
+
     const selectedClass = this.props.selected ? "--selected" : "--not-selected";
 
     return <div
