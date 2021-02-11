@@ -202,19 +202,29 @@ class TextLine extends Component<Props, State> {
   }
 
   private onBackspace = (event: React.KeyboardEvent) => {
+    // Switch to p before removing line
+    const type = this.props.defaultData?.subType;
+    if (type !== "p") {
+      this.setType("p");
+      return;
+    }
+
+    // Setup (re)move line
     const text = this.text;
     const cursorPosition = Cursor.getPosition(this.element);
-
     const beforeCursor = text.substring(0, cursorPosition);
     const afterCursor = text.substring(cursorPosition);
 
-    if (beforeCursor === "") {
-      if (afterCursor === "") {
-        event.preventDefault();
-        this.context.deleteLine(Infinity);
-      }
+    // (Re)move line
+    if (beforeCursor !== "")
+      return;
 
-      this.setType("p");
+    if (afterCursor === "") {
+      event.preventDefault();
+      this.context.deleteLine(Infinity);
+    }
+    else {
+      // todo: #16 Move line to previous Line (if possible)
     }
   }
 
@@ -283,9 +293,6 @@ class TextLine extends Component<Props, State> {
 
 
   // Lifecycle methods
-  /**
-   * Called if the component mounts
-   */
   public componentDidMount(): void {
     this.selectionManager = new SelectionManager(this.element);
     this.ensureSelected();
@@ -311,9 +318,6 @@ class TextLine extends Component<Props, State> {
     this.export();
   }
 
-  /**
-   * Called if the components updates
-   */
   public componentDidUpdate(prevProps: Props, prevState: State): void {
     this.ensureSelected();
 
