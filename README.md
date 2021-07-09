@@ -4,7 +4,7 @@ Student at Hasselt University
 
 
 ## About
-Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of this project is to create a modular / extensible editor for the web. Notebook also supports a user-friendly interface so that beginners or non-technical users can use this editor with ease, while advanced users can type really fast. 
+Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of this project is to create a modular / extensible editor for the web. Notebook also supports a user-friendly interface so that beginners or non-technical users can use this editor with ease, while advanced users can type really fast.
 
 
 # Features
@@ -39,16 +39,16 @@ Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of 
 
         - [ ] `Delete` at end of line: moves the previous line upward or deletes the content of a non-text component
         - [ ] `Backspace` at front of (empty) line: removes the current line
-        - [ ] `Backspace` at front of (non-empty) line: moves content (text) to the upward component or deletes the upward non-text component 
-              (both remove the current line)
+        - [ ] `Backspace` at front of (non-empty) line: moves content (text) to the upward component or deletes the upward non-text component
+          (both remove the current line)
 
         - [ ] `Enter` in middle or front of line: splits line into two parts
-        - [ ] `Enter` at end of line: 
+        - [ ] `Enter` at end of line:
 
     - [ ] Selection
         - [ ] Select (one line)
         - [ ] Set cursor correctly
-    
+
 - [ ] Textual Line
     - [x] Paragraph
     - [x] Headings
@@ -59,7 +59,7 @@ Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of 
     - [ ] Textual decoration
         - [ ] Bold, Italic, Marked, ...
         - [x] Math
-    
+
 - [ ] List Line
     - [ ] `?` Move to textual line
     - [ ] Ordered list
@@ -85,7 +85,7 @@ Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of 
 - [ ] Grid Line
     - [x] Lines
     - [x] Grid
-    - [ ] Options 
+    - [ ] Options
         - [ ] Size (Spacing)
 
 - [ ] Table Line
@@ -119,7 +119,7 @@ Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of 
     - setCaretOptions
     - resetCaretOptions
     - caretOptions
-- shared 
+- shared
     - createLine
     - removeLine
     - selectLine
@@ -127,7 +127,7 @@ Notebook is a simple Markdown and LaTeX Math editor build in React. The goal of 
     - moveToPreviousLine
     - updateData
     - selected
-   
+
 ## NotebookLine - *Line (communication)
 - shared actions (Notebook - NotebookLine)
 - changeLineType

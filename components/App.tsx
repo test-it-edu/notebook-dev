@@ -1,7 +1,6 @@
 import React, {createRef, Component} from 'react';
-import notebookJSON from "./data/notebook.json";
-import Notebook from "./components/Notebook/Notebook";
-import "./css/style.css";
+import notebookJSON from "../data/notebook.json";
+import Notebook from "./Notebook/Notebook";
 
 
 /**
