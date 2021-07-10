@@ -3,10 +3,10 @@ import ContentEditableParser from "../../utils/ContentEditableParser";
 import MathParser from "../../utils/MathParser";
 import KeyManager from "../../utils/KeyManager";
 import {NotebookContext, NotebookContextValue} from "../Notebook/NotebookContext";
-import {StringRenderMap} from "./base/NotebookLine";
 
 import Cursor from "../../utils/Cursor";
 import SelectionManager from "../../utils/Selection/SelectionManager";
+import {config} from "../../core/config/config";
 
 
 
@@ -153,7 +153,8 @@ class TextLine extends Component<Props, State> {
     }
 
     // Handle line type change
-    for (const keyword of Object.keys(StringRenderMap)) {
+    // Example: On [type]txt + [space] ==> create TextLine
+    for (const keyword of Object.keys(config.elements)) {
       if (isKeyword(keyword, text, prevText)) {
         this.props.onLineTypeChange(keyword);
         return;

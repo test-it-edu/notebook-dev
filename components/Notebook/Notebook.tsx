@@ -1,7 +1,7 @@
 import React, {Component, ReactNode} from 'react';
 import {NotebookContextValue, NotebookProvider} from "./NotebookContext";
 import KeyManager from "../../utils/KeyManager";
-import {notebookConfig} from "../../config/config";
+import {notebookConfig} from "../../core/config/config";
 import NotebookLine from "../NotebookLine/base/NotebookLine";
 
 
@@ -10,7 +10,7 @@ import NotebookLine from "../NotebookLine/base/NotebookLine";
  * Props Interface
  * @author Ingo Andelhofs
  */
-interface Props extends React.HTMLAttributes<HTMLElement> {}
+interface Props {}
 
 
 /**

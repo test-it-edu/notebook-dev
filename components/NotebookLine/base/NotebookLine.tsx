@@ -1,28 +1,15 @@
 import React, {Component, ReactNode} from 'react';
 import ClipboardManager from "../../../utils/ClipboardManager";
-import ImageLine from "../ImageLine";
-import LinesLine from "../LinesLine";
-import TextLine from "../TextLine";
 import {NotebookContext} from "../../Notebook/NotebookContext";
-
-
-
-/**
- * String Render Map
- * @author Ingo Andelhofs
- */
-export const StringRenderMap = {
-  "txt": TextLine,
-  "img": ImageLine,
-  "line": LinesLine,
-};
+import {config} from "../../../core/config/config";
+import Dropdown from "../../Dropdown/Dropdown";
 
 
 /**
  * Props Interface
  * @author Ingo Andelhofs
  */
-interface Props extends React.HTMLAttributes<HTMLElement>  {
+interface Props extends React.HTMLAttributes<HTMLElement> {
   defaultType: string;
   defaultData: any;
 
@@ -45,7 +32,6 @@ interface State {
 
   dropdownActive: boolean;
 }
-
 
 
 /**
@@ -86,8 +72,8 @@ class NotebookLine extends Component<Props, State> {
    * @param type The LineType you want to set
    * @param props Extra properties you want to pass to the NotebookLine
    */
-  private setType = (type: string, props: any = {}): void =>  {
-    this.setState(() => ({ type, props }));
+  private setType = (type: string, props: any = {}): void => {
+    this.setState(() => ({type, props}));
   }
 
 
@@ -109,22 +95,6 @@ class NotebookLine extends Component<Props, State> {
     });
   }
 
-  private onDropdownClose = (event: MouseEvent) => {
-    const isDescendant = (parent: any, child: any) => {
-      let node = child;
-      while (node != null) {
-        if (node === parent) {
-          return true;
-        }
-        node = node.parentNode;
-      }
-      return false;
-    }
-
-    if (!isDescendant(this.buttonRef.current, event.target)) {
-      this.setState(() => ({dropdownActive: false}));
-    }
-  }
 
 
 
@@ -139,25 +109,7 @@ class NotebookLine extends Component<Props, State> {
       type: this.props.defaultType || "txt",
       data: this.props.defaultData,
     }));
-
-
-    // Click outside to close dropdown
-    document.addEventListener("click", this.onDropdownClose);
   }
-
-  /**
-   * Called if the component unmounts
-   */
-  public componentWillUnmount() {
-    document.removeEventListener("click", this.onDropdownClose);
-  }
-
-  /**
-   * Called if the component is updated
-   * @param prevProps The previous props
-   * @param prevState The previous state
-   */
-  public componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {}
 
 
   // Render methods
@@ -165,7 +117,7 @@ class NotebookLine extends Component<Props, State> {
    * Renders the correct line by it's LineType
    */
   private renderLine(): ReactNode {
-    const Element = (StringRenderMap as any)[this.state.type];
+    const Element = config.elements[this.state.type];
 
     // TODO: Check order of props (this.state.props overrides this.props!!!)
     // TODO: IMPORTANT
@@ -183,34 +135,76 @@ class NotebookLine extends Component<Props, State> {
    * Render the dropdown menu and line button
    */
   private renderDropdown(): ReactNode {
-    return <button
-      ref={this.buttonRef}
-      className={this.state.dropdownActive ? " --active" : ""}
-      onClick={() => this.setState(() => ({ dropdownActive: !this.state.dropdownActive }))}
-    >
-      <i className="fas fa-ellipsis-v"/>
-      <div className={`options-dropdown${this.state.dropdownActive ? " --active" : ""}`}>
-        <ul>
-          <li
-            onClick={() => this.setType("txt", { defaultData: { subType: "p" } })}>
-            <i className="fas fa-paragraph"/> Paragraph</li>
-          <li
-            onClick={() => this.setType("txt", { defaultData: { subType: "h1" } })}>
-            <i className="fas fa-heading"/> Header 1</li>
-          <li
-            onClick={() => this.setType("txt", { defaultData: { subType: "h2" } })}>
-            <i className="fas fa-heading"/> Header 2</li>
-          <li
-            onClick={() => this.setType("txt", { defaultData: { subType: "h3" } })}>
-            <i className="fas fa-heading"/> Header 3</li>
-        </ul>
 
-        <ul>
-          <li onClick={() => this.setType("img")}><i className="fas fa-image"/> Image</li>
-          <li onClick={() => this.setType("line")}><i className="fas fa-grip-lines"/> Lines</li>
+    const data: { type: string, props: any, icon: string, text: string }[] = [
+      {
+        type: "txt",
+        props: {defaultData: {subType: "p"}},
+        icon: "fa-paragraph",
+        text: "Paragraph",
+      },
+      {
+        type: "txt",
+        props: {defaultData: {subType: "h1"}},
+        icon: "fa-heading",
+        text: "Heading 1",
+      },
+      {
+        type: "txt",
+        props: {defaultData: {subType: "h2"}},
+        icon: "fa-heading",
+        text: "Heading 2",
+      },
+      {
+        type: "txt",
+        props: {defaultData: {subType: "h3"}},
+        icon: "fa-heading",
+        text: "Heading 3",
+      },
+
+      {
+        type: "img",
+        props: {},
+        icon: "fa-image",
+        text: "Image",
+      },
+      {
+        type: "line",
+        props: {},
+        icon: "fa-grip-lines",
+        text: "Lines",
+      }
+    ];
+
+    const renderHandle = ({onToggle, style}) => {
+      return <i
+        className="fas fa-ellipsis-v"
+        onClick={onToggle}
+        style={style}
+      />;
+    }
+
+    const renderMenu = ({onToggle, open, style}) => {
+      return <div style={style} className={`options-dropdown${open ? " --active" : ""}`}>
+        <ul style={{width: "max-content"}}>
+          {data.map(({type, props, text, icon}: { type: string, props: any, icon: string, text: string }) => {
+            const child = <><i className={`fas ${icon}`}/> {text}</>;
+            const onClick = () => {
+              this.setType(type, props);
+              onToggle();
+            }
+
+            return <li key={text} onClick={onClick} children={child}/>;
+          })}
         </ul>
       </div>
-    </button>;
+    }
+
+    return <Dropdown
+      className="button"
+      renderToggle={renderHandle}
+      renderMenu={renderMenu}
+    />;
   }
 
   /**

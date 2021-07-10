@@ -1,6 +1,7 @@
-import React, {createRef, Component} from 'react';
+import React, {Component} from 'react';
 import notebookJSON from "../data/notebook.json";
 import Notebook from "./Notebook/Notebook";
+import RefManager from "../utils/Ref/RefManager";
 
 
 /**
@@ -8,15 +9,15 @@ import Notebook from "./Notebook/Notebook";
  * Entry point of the application
  * @author Ingo Andelhofs
  */
-class App extends Component<{}, {}> {
+class App extends Component<never, never> {
 
   // Members
-  private notebookRef = createRef<Notebook>();
+  private notebook = new RefManager<Notebook>();
 
 
   // Listeners
   private onExportToConsole = () => {
-    const notebookElement = this.notebookRef.current!;
+    const notebookElement = this.notebook.get();
     const exportData = notebookElement.export();
     const dataAsString = JSON.stringify(exportData, null, 2);
 
@@ -24,7 +25,7 @@ class App extends Component<{}, {}> {
   }
 
   private onLoadNotebook = () => {
-    const notebookElement = this.notebookRef.current!;
+    const notebookElement = this.notebook.get();
     notebookElement.load(notebookJSON);
   }
 
@@ -38,7 +39,9 @@ class App extends Component<{}, {}> {
         <button onClick={this.onLoadNotebook}>Load notebook.json</button>
       </section>
 
-      <Notebook ref={this.notebookRef}/>
+      <Notebook
+        ref={this.notebook.createRef}
+      />
     </section>;
   }
 }

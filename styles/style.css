@@ -1,3 +1,9 @@
+/*html, body {*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    !*position: relative;*!*/
+/*}*/
+
 /* General styling */
 div, button {
     outline: none;
@@ -80,17 +86,20 @@ div, button {
 }
 
 
-.notebook-line:hover .type-button button,
-.notebook-line.--selected .type-button button,
-.notebook-line .type-button button.--active {
+/* =================================================================== */
+/* ======================= START .type-button ======================== */
+.notebook-line:hover .type-button .button,
+.notebook-line.--selected .type-button .button,
+.notebook-line .type-button .button.--active {
     opacity: 1;
 }
 
-.notebook-line .type-button button.--active {
-    z-index: 9999;
+.notebook-line .type-button .button.--active {
+    /*z-index: 9;*/
 }
 
-.type-button button {
+.type-button .button {
+
     opacity: 0;
     padding: 6px 10px;
     margin-right: 4px;
@@ -106,11 +115,10 @@ div, button {
     transition: .5s ease;
 
     position: relative;
-    top: 50%;
-    transform: translateY(calc(-50% - 1px));
+    top: 2px;
 }
 
-.type-button button .options-dropdown.--active {
+.type-button .button .options-dropdown.--active {
     display: grid;
     grid-template-columns: auto auto;
     grid-gap: 12px;
@@ -118,7 +126,7 @@ div, button {
     z-index: 9999;
 }
 
-.type-button button .options-dropdown {
+.type-button .button .options-dropdown {
     display: none;
     position: absolute;
     z-index: 999;
@@ -132,7 +140,7 @@ div, button {
     left: 0;
 }
 
-.type-button button .options-dropdown::after {
+.type-button .button .options-dropdown::after {
     content: "";
     position: absolute;
     bottom: 100%;
@@ -144,7 +152,7 @@ div, button {
     border-radius: 4px;
 }
 
-.type-button button .options-dropdown ul {
+.type-button .button .options-dropdown ul {
     list-style: none;
     margin: 0;
     padding: 0 0 0 12px;
@@ -153,12 +161,12 @@ div, button {
     border-left: 1px solid #dddddd;
 }
 
-.type-button button .options-dropdown ul:first-child {
+.type-button .button .options-dropdown ul:first-child {
     padding: 0;
     border-left: none;
 }
 
-.type-button button .options-dropdown ul li {
+.type-button .button .options-dropdown ul li {
     display: grid;
     grid-template-columns: auto auto;
     grid-gap: 6px;
@@ -167,9 +175,12 @@ div, button {
     border-radius: 4px;
 }
 
-.type-button button .options-dropdown ul li:hover {
+.type-button .button .options-dropdown ul li:hover {
     background-color: #f1f1f1;
 }
+/* =============================== END =============================== */
+/* =================================================================== */
+
 
 
 .line-wrapper {
