@@ -14,7 +14,7 @@ interface State {}
 class DropdownPage extends Component<Props, State> {
 
   // Rendering
-  private renderToggle = ({onToggle, style}) => {
+  private renderToggle = ({onToggle, style}: any) => {
     return <div
       style={style}
       onClick={onToggle}
@@ -22,7 +22,7 @@ class DropdownPage extends Component<Props, State> {
     />
   }
 
-  private renderMenu= ({style}) => {
+  private renderMenu= ({style}: any) => {
     return <div
       style={style}
       children="Menu"
