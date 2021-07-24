@@ -1,9 +1,6 @@
 # developement
 .idea
 
-# npm
-.npmrc
-
 # dependencies
 /node_modules
 /.pnp
